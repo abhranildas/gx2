@@ -1,0 +1,152 @@
+<deployment-project plugin="plugin.toolbox" plugin-version="1.0">
+  <configuration build-checksum="2263924193" file="C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2\gx2.prj" location="C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2" name="gx2" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>Generalized chi-square distribution</param.appname>
+    <param.authnamewatermark>Abhranil Das</param.authnamewatermark>
+    <param.email>abhranil.das@utexas.edu</param.email>
+    <param.company>The University of Texas at Austin</param.company>
+    <param.summary>Compute the statistics, pdf, cdf, inverse cdf and random numbers of the generalized chi-square distribution.</param.summary>
+    <param.description>The generalized chi-square variable is a quadratic form of a normal variable, or equivalently, a linear sum of independent non-central chi-square variables and a normal variable. Try the Getting Started guide for a quick demo of all the functions.</param.description>
+    <param.screenshot>${PROJECT_ROOT}\gx2_icon.png</param.screenshot>
+    <param.version>1.6.1</param.version>
+    <param.output>${PROJECT_ROOT}\Generalized chi-square distribution.mltbx</param.output>
+    <param.products.name>
+      <item>Statistics and Machine Learning Toolbox</item>
+      <item>Symbolic Math Toolbox</item>
+    </param.products.name>
+    <param.products.id>
+      <item>19</item>
+      <item>15</item>
+    </param.products.id>
+    <param.products.version>
+      <item>12.0</item>
+      <item>8.6</item>
+    </param.products.version>
+    <param.platforms />
+    <param.guid>6f9f2474-f422-495e-a245-dd928544dd14</param.guid>
+    <param.exclude.filters>% List files contained in your toolbox folder that you would like to exclude
+% from packaging.  Excludes should be listed relative to the toolbox folder.
+% Some examples of how to specify excludes are provided below:
+%
+% A single file in the toolbox folder:
+% .svn
+%
+% A single file in a subfolder of the toolbox folder:
+% example/.svn
+%
+% All files in a subfolder of the toolbox folder:
+% example/*
+%
+% All files of a certain name in all subfolders of the toolbox folder:
+% **/.svn
+%
+% All files matching a pattern in all subfolders of the toolbox folder:
+% **/*.bak
+%
+gx2_icon.png</param.exclude.filters>
+    <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
+    <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;examples&gt;
+   &lt;exampleCategory name="doc"&gt;
+      &lt;example name="GettingStarted" type="html"&gt;
+         &lt;file type="source"&gt;/doc/html/GettingStarted.html&lt;/file&gt;
+         &lt;file type="main"&gt;/doc/GettingStarted.mlx&lt;/file&gt;
+         &lt;file type="thumbnail"/&gt;
+      &lt;/example&gt;
+   &lt;/exampleCategory&gt;
+&lt;/examples&gt;</param.examples>
+    <param.demosxml />
+    <param.apps />
+    <param.registered.apps />
+    <param.docs />
+    <param.getting.started.guide>${PROJECT_ROOT}\doc\GettingStarted.mlx</param.getting.started.guide>
+    <param.matlabpath.excludes />
+    <param.javaclasspath.excludes />
+    <param.exported.on.package>true</param.exported.on.package>
+    <param.required.addons />
+    <param.matlab.project.id />
+    <param.matlab.project.name />
+    <param.release.start />
+    <param.release.end />
+    <param.release.current.only>false</param.release.current.only>
+    <param.compatiblity.windows>true</param.compatiblity.windows>
+    <param.compatiblity.macos>true</param.compatiblity.macos>
+    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
+    <param.installation.map />
+    <param.additional.sw.names />
+    <param.additional.sw.licenses />
+    <param.additional.sw.win.url />
+    <param.additional.sw.mac.url />
+    <param.additional.sw.linux.url />
+    <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.output />
+      <param.platforms />
+      <param.exclude.pcodedmfiles />
+      <param.demosxml />
+      <param.apps />
+      <param.registered.apps />
+      <param.docs />
+      <param.matlabpath.excludes />
+      <param.javaclasspath.excludes />
+      <param.required.addons />
+      <param.matlab.project.id />
+      <param.matlab.project.name />
+      <param.release.current.only />
+      <param.compatiblity.windows />
+      <param.compatiblity.macos />
+      <param.compatiblity.linux />
+      <param.compatiblity.matlabonline />
+      <param.installation.map />
+      <param.additional.sw.names />
+      <param.additional.sw.licenses />
+      <param.additional.sw.win.url />
+      <param.additional.sw.mac.url />
+      <param.additional.sw.linux.url />
+    </unset>
+    <fileset.rootdir>
+      <file>${PROJECT_ROOT}</file>
+    </fileset.rootdir>
+    <fileset.rootfiles>
+      <file>${PROJECT_ROOT}\demos.xml</file>
+      <file>${PROJECT_ROOT}\doc</file>
+      <file>${PROJECT_ROOT}\gx2_params_norm_quad.m</file>
+      <file>${PROJECT_ROOT}\gx2cdf.m</file>
+      <file>${PROJECT_ROOT}\gx2cdf_davies.m</file>
+      <file>${PROJECT_ROOT}\gx2cdf_imhof.m</file>
+      <file>${PROJECT_ROOT}\gx2cdf_ruben.m</file>
+      <file>${PROJECT_ROOT}\gx2inv.m</file>
+      <file>${PROJECT_ROOT}\gx2pdf.m</file>
+      <file>${PROJECT_ROOT}\gx2rnd.m</file>
+      <file>${PROJECT_ROOT}\gx2stat.m</file>
+    </fileset.rootfiles>
+    <fileset.depfun.included />
+    <fileset.depfun.excluded />
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}" name="Generalized chi-square distribution.mltbx" optional="false">C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2\Generalized chi-square distribution.mltbx</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2020b</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
