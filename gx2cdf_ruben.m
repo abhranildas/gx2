@@ -55,7 +55,7 @@ function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
 	lambda_pos=true;
 	
 	if all(lambda<0)
-		lambda=-lambda; x=-x; lambda_pos=false;
+		lambda=-lambda; x=-x; c=-c; lambda_pos=false;
 	end
 	beta=0.90625*min(lambda);
 	M=sum(m);
