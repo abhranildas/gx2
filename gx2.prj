@@ -1,14 +1,14 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="2263924193" file="C:\Users\abhra\Google Drive\Geisler Lab\gx2\gx2.prj" location="C:\Users\abhra\Google Drive\Geisler Lab\gx2" name="gx2" target="target.toolbox" target-name="Package Toolbox">
-    <param.appname>Generalized chi-square distribution [non github]</param.appname>
+  <configuration build-checksum="2263924193" file="C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2\gx2.prj" location="C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2" name="gx2" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>Generalized chi-square distribution</param.appname>
     <param.authnamewatermark>Abhranil Das</param.authnamewatermark>
     <param.email>abhranil.das@utexas.edu</param.email>
     <param.company>The University of Texas at Austin</param.company>
     <param.summary>Compute the statistics, pdf, cdf, inverse cdf and random numbers of the generalized chi-square distribution.</param.summary>
     <param.description>The generalized chi-square variable is a quadratic form of a normal variable, or equivalently, a linear sum of independent non-central chi-square variables and a normal variable. Try the Getting Started guide for a quick demo of all the functions.</param.description>
     <param.screenshot>${PROJECT_ROOT}\gx2_icon.png</param.screenshot>
-    <param.version>1.7.3</param.version>
-    <param.output>${PROJECT_ROOT}\Generalized chi-square distribution [non github].mltbx</param.output>
+    <param.version>1.7.6</param.version>
+    <param.output>${PROJECT_ROOT}\Generalized chi-square distribution.mltbx</param.output>
     <param.products.name>
       <item>Statistics and Machine Learning Toolbox</item>
       <item>Symbolic Math Toolbox</item>
@@ -45,7 +45,8 @@
 gx2_icon.png
 .git
 README.md
-LICENSE</param.exclude.filters>
+LICENSE
+.gitignore</param.exclude.filters>
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
     <param.examples>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;examples&gt;
@@ -113,7 +114,6 @@ LICENSE</param.exclude.filters>
       <file>${PROJECT_ROOT}</file>
     </fileset.rootdir>
     <fileset.rootfiles>
-      <file>${PROJECT_ROOT}\.gitignore</file>
       <file>${PROJECT_ROOT}\demos.xml</file>
       <file>${PROJECT_ROOT}\doc</file>
       <file>${PROJECT_ROOT}\gx2_params_norm_quad.m</file>
@@ -130,7 +130,7 @@ LICENSE</param.exclude.filters>
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="Generalized chi-square distribution [non github].mltbx" optional="false">C:\Users\abhra\Google Drive\Geisler Lab\gx2\Generalized chi-square distribution [non github].mltbx</file>
+      <file location="${PROJECT_ROOT}" name="Generalized chi-square distribution.mltbx" optional="false">C:\Users\abhra\Google Drive\Geisler Lab\IntClassNorm\gx2\Generalized chi-square distribution.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
