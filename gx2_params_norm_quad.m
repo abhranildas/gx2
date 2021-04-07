@@ -1,4 +1,4 @@
-function [lambda,m,delta,sigma,c]=gx2_params_norm_quad(mu,v,quad)
+function [w,k,lambda,m,s]=gx2_params_norm_quad(mu,v,quad)
 	
 	% GX2_PARAMS_NORM_QUAD A quadratic form of a normal variable is distributed
 	% as a generalized chi-squared. This function takes the normal parameters
@@ -19,7 +19,7 @@ function [lambda,m,delta,sigma,c]=gx2_params_norm_quad(mu,v,quad)
 	% quad.q1=[-1;0];
 	% quad.q0=-1;
 	%
-	% [lambda,m,delta,sigma,c]=gx2_params_norm_quad(mu,v,quad)
+	% [w,k,lambda,m,s]=gx2_params_norm_quad(mu,v,quad)
 	%
 	% Required inputs:
 	% mu        column vector of normal mean
@@ -30,12 +30,12 @@ function [lambda,m,delta,sigma,c]=gx2_params_norm_quad(mu,v,quad)
 	%               q0      scalar constant
 	%
 	% Outputs:
-	% lambda    row vector of coefficients of the non-central chi-squares
-	% m         row vector of degrees of freedom of the non-central chi-squares
-	% delta     row vector of non-centrality paramaters (sum of squares of
+	% w         row vector of weights of the non-central chi-squares
+	% k         row vector of degrees of freedom of the non-central chi-squares
+	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% sigma     sd of normal term
-	% c         constant term
+	% m         mean of normal term
+    % s         sd of normal term
     %
     % See also:
 	% <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Interactive demos</a>
@@ -54,8 +54,8 @@ function [lambda,m,delta,sigma,c]=gx2_params_norm_quad(mu,v,quad)
 	d=diag(D)';
 	b=(R'*q1)';
 	
-	[lambda,~,ic]=unique(nonzeros(d)'); % unique non-zero eigenvalues
-	m=accumarray(ic,1)'; % total dof of each eigenvalue
-	delta=arrayfun(@(x) sum((b(d==x)).^2),lambda)./(4*lambda.^2); % total non-centrality for each eigenvalue
-	sigma=norm(b(~d));
-	c=q0-sum(lambda.*delta);
+	[w,~,ic]=unique(nonzeros(d)'); % unique non-zero eigenvalues
+	k=accumarray(ic,1)'; % total dof of each eigenvalue
+	lambda=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
+	m=q0-dot(w,lambda);
+    s=norm(b(~d));

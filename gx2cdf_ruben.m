@@ -1,4 +1,4 @@
-function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
+function [p,errbnd]=gx2cdf_ruben(x,w,k,lambda,m,varargin)
 	
 	% GX2CDF_RUBEN Returns the cdf of a generalized chi-squared (a weighted sum of
 	% non-central chi-squares with all weights the same sign), using Ruben's
@@ -11,20 +11,20 @@ function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
 	% >A method to integrate and classify normal distributions</a>.
 	%
 	% Usage:
-	% p=gx2cdf_ruben(x,lambda,m,delta,c)
-	% p=gx2cdf_ruben(x,lambda,m,delta,c,N)
-	% [p,err]=gx2cdf_ruben(x,lambda,m,delta,c)
+	% p=gx2cdf_ruben(x,w,k,lambda,m)
+	% p=gx2cdf_ruben(x,w,k,lambda,m,N)
+	% [p,err]=gx2cdf_ruben(x,w,k,lambda,m)
 	%
 	% Example:
 	% [p,err]=gx2cdf_ruben(25,[1 5 2],[1 2 3],[2 3 7],0,100)
 	%
 	% Required inputs:
 	% x         points at which to evaluate the cdf
-	% lambda    row vector of coefficients of the non-central chi-squares
-	% m         row vector of degrees of freedom of the non-central chi-squares
-	% delta     row vector of non-centrality paramaters (sum of squares of
+	% w         row vector of weights of the non-central chi-squares
+	% k         row vector of degrees of freedom of the non-central chi-squares
+	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% c         constant term
+	% m         mean of normal term
 	%
 	% Optional positional input:
 	% N         no. of terms in the approximation. Default = 1000.
@@ -42,31 +42,31 @@ function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
 	parser=inputParser;
 	parser.KeepUnmatched=true;
 	addRequired(parser,'x',@(x) isreal(x));
-	addRequired(parser,'lambda',@(x) isreal(x) && isrow(x)  && (all(x>0)||all(x<0)) );
-	addRequired(parser,'m',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'delta',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'c',@(x) isreal(x) && isscalar(x));
+	addRequired(parser,'w',@(x) isreal(x) && isrow(x)  && (all(x>0)||all(x<0)) );
+	addRequired(parser,'k',@(x) isreal(x) && isrow(x));
+	addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
+	addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 	addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 	addParameter(parser,'N',1e2,@(x) ismember(x,1:x));
 	
-	parse(parser,x,lambda,m,delta,c,varargin{:});
+	parse(parser,x,w,k,lambda,m,varargin{:});
 	side=parser.Results.side;
 	N=parser.Results.N;
 	lambda_pos=true;
 	
-	if all(lambda<0)
-		lambda=-lambda; x=-x; c=-c; lambda_pos=false;
+	if all(w<0)
+		w=-w; x=-x; m=-m; lambda_pos=false;
 	end
-	beta=0.90625*min(lambda);
-	M=sum(m);
+	beta=0.90625*min(w);
+	M=sum(k);
 	n=(1:N-1)';
 	
 	% compute the g's
-	g=sum(m.*(1-beta./lambda).^n,2)+ beta*n.*((1-beta./lambda).^(n-1))*(delta./lambda)';
+	g=sum(k.*(1-beta./w).^n,2)+ beta*n.*((1-beta./w).^(n-1))*(lambda./w)';
 	
 	% compute the expansion coefficients
 	a=nan(N,1);
-	a(1)=sqrt(exp(-sum(delta))*beta^M*prod(lambda.^(-m)));
+	a(1)=sqrt(exp(-sum(lambda))*beta^M*prod(w.^(-k)));
 	if a(1)<realmin
 		error('Underflow error: some series coefficients are smaller than machine precision.')
 	end
@@ -75,8 +75,8 @@ function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
 	end
 	
 	% compute the central chi-squared integrals
-	[xg,mg]=meshgrid((x-c)/beta,M:2:M+2*(N-1));
-	F=arrayfun(@(x,m) chi2cdf(x,m),xg,mg);
+	[xg,mg]=meshgrid((x-m)/beta,M:2:M+2*(N-1));
+	F=arrayfun(@(x,k) chi2cdf(x,k),xg,mg);
 	
 	% compute the integral
 	p=a'*F;
@@ -87,4 +87,4 @@ function [p,errbnd]=gx2cdf_ruben(x,lambda,m,delta,c,varargin)
 	end
 	
 	% compute the truncation error
-	errbnd=(1-sum(a))*chi2cdf((x-c)/beta,M+2*N);
+	errbnd=(1-sum(a))*chi2cdf((x-m)/beta,M+2*N);

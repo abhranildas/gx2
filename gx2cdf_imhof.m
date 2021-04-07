@@ -1,4 +1,4 @@
-function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
+function [p,flag]=gx2cdf_imhof(x,w,k,lambda,m,varargin)
 	
 	% GX2CDF_IMHOF Returns the cdf of a generalized chi-squared (a weighted sum of
 	% non-central chi-squares), using Imhof's [1961] method.
@@ -10,21 +10,21 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 	% >A method to integrate and classify normal distributions</a>.
 	%
 	% Usage:
-	% p=gx2cdf_imhof(x,lambda,m,delta,c)
-	% p=gx2cdf_imhof(x,lambda,m,delta,c,'upper')
-	% p=gx2cdf_imhof(x,lambda,m,delta,c,'AbsTol',0,'RelTol',1e-7)
-	% p=gx2cdf_imhof(x,lambda,m,delta,c,'upper','approx','tail')
+	% p=gx2cdf_imhof(x,w,k,lambda,m)
+	% p=gx2cdf_imhof(x,w,k,lambda,m,'upper')
+	% p=gx2cdf_imhof(x,w,k,lambda,m,'AbsTol',0,'RelTol',1e-7)
+	% p=gx2cdf_imhof(x,w,k,lambda,m,'upper','approx','tail')
 	%
 	% Example:
 	% p=gx2cdf_imhof(25,[1 -5 2],[1 2 3],[2 3 7],0)
 	%
 	% Required inputs:
 	% x         points at which to evaluate the cdf
-	% lambda    row vector of coefficients of the non-central chi-squares
-	% m         row vector of degrees of freedom of the non-central chi-squares
-	% delta     row vector of non-centrality paramaters (sum of squares of
+	% w         row vector of weights of the non-central chi-squares
+	% k         row vector of degrees of freedom of the non-central chi-squares
+	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% c         constant term
+	% m         mean of normal term
 	%
 	% Optional positional input:
 	% 'upper'   more accurate estimate of the complementary CDF when it's small
@@ -35,7 +35,7 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 	%           The absolute OR the relative tolerance is satisfied.
 	% 'approx'  set to 'tail' for Pearson's approximation of the tail
 	%           probabilities. Works best for the upper (lower) tail when all
-	%           lambda are positive (negative).
+	%           w are positive (negative).
 	%
 	% Outputs:
 	% p         computed cdf
@@ -51,16 +51,16 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 	
 	parser = inputParser;
 	addRequired(parser,'x',@(x) isreal(x));
+	addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+	addRequired(parser,'k',@(x) isreal(x) && isrow(x));
 	addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'m',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'delta',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'c',@(x) isreal(x) && isscalar(x));
+	addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 	addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 	addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 	addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 	addParameter(parser,'approx','none',@(x) strcmpi(x,'none') || strcmpi(x,'tail'));
 	
-	parse(parser,x,lambda,m,delta,c,varargin{:});
+	parse(parser,x,w,k,lambda,m,varargin{:});
 	side=parser.Results.side;
 	AbsTol=parser.Results.AbsTol;
 	RelTol=parser.Results.RelTol;
@@ -68,27 +68,27 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 	
 	u=[]; % pre-allocate in static workspace
 	
-	% define the integrand (lambda, m, delta must be column vectors here)
-	function f=imhof_integrand(u,x,lambda,m,delta)
-		theta=sum(m.*atan(lambda*u)+(delta.*(lambda*u))./(1+lambda.^2*u.^2),1)/2-u*x/2;
-		rho=prod(((1+lambda.^2*u.^2).^(m/4)).*exp(((lambda.^2*u.^2).*delta)./(2*(1+lambda.^2*u.^2))),1);
+	% define the integrand (w, k, lambda must be column vectors here)
+	function f=imhof_integrand(u,x,w,k,lambda)
+		theta=sum(k.*atan(w*u)+(lambda.*(w*u))./(1+w.^2*u.^2),1)/2-u*x/2;
+		rho=prod(((1+w.^2*u.^2).^(k/4)).*exp(((w.^2*u.^2).*lambda)./(2*(1+w.^2*u.^2))),1);
 		f=sin(theta)./(u.*rho);
 	end
 	
 	if strcmpi(approx,'tail') % compute tail approximations
 		j=(1:3)';
-		k=sum((lambda.^j).*(j.*delta+m),2);
-		h=k(2)^3/k(3)^2;
-		if k(3)>0
-			y=(x-c-k(1))*sqrt(h/k(2))+h;
+		g=sum((w.^j).*(j.*lambda+k),2);
+		h=g(2)^3/g(3)^2;
+		if g(3)>0
+			y=(x-m-g(1))*sqrt(h/g(2))+h;
 			if strcmpi(side,'lower')
 				p=chi2cdf(y,h);
 			elseif strcmpi(side,'upper')
 				p=chi2cdf(y,h,'upper');
 			end
 		else
-			k=sum(((-lambda).^j).*(j.*delta+m),2);
-			y=(-(x-c)-k(1))*sqrt(h/k(2))+h;
+			g=sum(((-w).^j).*(j.*lambda+k),2);
+			y=(-(x-m)-g(1))*sqrt(h/g(2))+h;
 			if strcmpi(side,'lower')
 				p=chi2cdf(y,h,'upper');
 			elseif strcmpi(side,'upper')
@@ -99,7 +99,7 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 	else
 		% compute the integral
 		if any(strcmpi(parser.UsingDefaults,'AbsTol')) && any(strcmpi(parser.UsingDefaults,'RelTol'))
-			imhof_integral=arrayfun(@(x) integral(@(u) imhof_integrand(u,x-c,lambda',m',delta'),0,inf),x);
+			imhof_integral=arrayfun(@(x) integral(@(u) imhof_integrand(u,x-m,w',k',lambda'),0,inf),x);
 			if strcmpi(side,'lower')
 				p=0.5-imhof_integral/pi;
 			elseif strcmpi(side,'upper')
@@ -107,7 +107,7 @@ function [p,flag]=gx2cdf_imhof(x,lambda,m,delta,c,varargin)
 			end
 		else
 			syms u
-			imhof_integral=arrayfun(@(x) vpaintegral(@(u) imhof_integrand(u,x-c,lambda',m',delta'),...
+			imhof_integral=arrayfun(@(x) vpaintegral(@(u) imhof_integrand(u,x-m,w',k',lambda'),...
 				u,0,inf,'AbsTol',AbsTol,'RelTol',RelTol,'MaxFunctionCalls',inf),x);
 			
 			if strcmpi(side,'lower')

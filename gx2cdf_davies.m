@@ -1,4 +1,4 @@
-function [p,flag]=gx2cdf_davies(x,lambda,m,delta,sigma,c,varargin)
+function [p,flag]=gx2cdf_davies(x,w,k,lambda,m,s,varargin)
 	
 	% GX2CDF_DAVIES Returns the cdf of a generalized chi-squared (a weighted
 	% sum of non-central chi-squares and a normal), using Davies' [1973]
@@ -11,21 +11,21 @@ function [p,flag]=gx2cdf_davies(x,lambda,m,delta,sigma,c,varargin)
 	% >A method to integrate and classify normal distributions</a>.
 	%
 	% Usage:
-	% p=gx2cdf_davies(x,lambda,m,delta,sigma,c)
-	% p=gx2cdf_davies(x,lambda,m,delta,sigma,c,'upper')
-	% p=gx2cdf_davies(x,lambda,m,delta,sigma,c,'AbsTol',0,'RelTol',1e-7)
+	% p=gx2cdf_davies(x,w,k,lambda,m,s)
+	% p=gx2cdf_davies(x,w,k,lambda,m,s,'upper')
+	% p=gx2cdf_davies(x,w,k,lambda,m,s,'AbsTol',0,'RelTol',1e-7)
 	%
 	% Example:
 	% p=gx2cdf_davies(25,[1 -5 2],[1 2 3],[2 3 7],5,0)
 	%
 	% Required inputs:
 	% x         points at which to evaluate the cdf
-	% lambda    row vector of coefficients of the non-central chi-squares
-	% m         row vector of degrees of freedom of the non-central chi-squares
-	% delta     row vector of non-centrality paramaters (sum of squares of
+	% w         row vector of weights of the non-central chi-squares
+	% k         row vector of degrees of freedom of the non-central chi-squares
+	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% sigma     sd of normal term
-	% c         constant term
+	% m         mean of normal term
+    % s         sd of normal term
 	%
 	% Optional positional input:
 	% 'upper'   more accurate estimate of the complementary CDF when it's small
@@ -49,32 +49,32 @@ function [p,flag]=gx2cdf_davies(x,lambda,m,delta,sigma,c,varargin)
 	parser=inputParser;
 	parser.KeepUnmatched=true;
 	addRequired(parser,'x',@(x) isreal(x));
+	addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+	addRequired(parser,'k',@(x) isreal(x) && isrow(x));
 	addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'m',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'delta',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'sigma',@(x) isreal(x) && isscalar(x));
-	addRequired(parser,'c',@(x) isreal(x) && isscalar(x));
+	addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
+	addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 	addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 	addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 	addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
 	
-	parse(parser,x,lambda,m,delta,sigma,c,varargin{:});
+	parse(parser,x,w,k,lambda,m,s,varargin{:});
 	side=parser.Results.side;
 	AbsTol=parser.Results.AbsTol;
 	RelTol=parser.Results.RelTol;
 	
 	u=[]; % pre-allocate in static workspace
 	
-	% define the integrand (lambda, m, delta must be column vectors here)
-	function f=davies_integrand(u,x,lambda,m,delta,sigma)
-		theta=sum(m.*atan(lambda*u)+(delta.*(lambda*u))./(1+lambda.^2*u.^2),1)/2-u*x/2;
-		rho=prod(((1+lambda.^2*u.^2).^(m/4)).*exp(((lambda.^2*u.^2).*delta)./(2*(1+lambda.^2*u.^2))),1) .* exp(u.^2*sigma^2/8);
+	% define the integrand (w, k, lambda must be column vectors here)
+	function f=davies_integrand(u,x,w,k,lambda,s)
+		theta=sum(k.*atan(w*u)+(lambda.*(w*u))./(1+w.^2*u.^2),1)/2-u*x/2;
+		rho=prod(((1+w.^2*u.^2).^(k/4)).*exp(((w.^2*u.^2).*lambda)./(2*(1+w.^2*u.^2))),1) .* exp(u.^2*s^2/8);
 		f=sin(theta)./(u.*rho);
 	end
 	
 	% compute the integral
 	if any(strcmpi(parser.UsingDefaults,'AbsTol')) && any(strcmpi(parser.UsingDefaults,'RelTol'))
-		davies_integral=arrayfun(@(x) integral(@(u) davies_integrand(u,x-c,lambda',m',delta',sigma),0,inf),x);
+		davies_integral=arrayfun(@(x) integral(@(u) davies_integrand(u,x-m,w',k',lambda',s),0,inf),x);
 		if strcmpi(side,'lower')
 			p=0.5-davies_integral/pi;
 		elseif strcmpi(side,'upper')
@@ -82,7 +82,7 @@ function [p,flag]=gx2cdf_davies(x,lambda,m,delta,sigma,c,varargin)
 		end
 	else
 		syms u
-		davies_integral=arrayfun(@(x) vpaintegral(@(u) davies_integrand(u,x-c,lambda',m',delta',sigma),...
+		davies_integral=arrayfun(@(x) vpaintegral(@(u) davies_integrand(u,x-m,w',k',lambda',s),...
 			u,0,inf,'AbsTol',AbsTol,'RelTol',RelTol,'MaxFunctionCalls',inf),x);
 		if strcmpi(side,'lower')
 			p=double(0.5-davies_integral/pi);

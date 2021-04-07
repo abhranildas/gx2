@@ -1,4 +1,4 @@
-function r=gx2rnd(lambda,m,delta,sigma,c,varargin)
+function r=gx2rnd(w,k,lambda,m,s,varargin)
 	
 	% GX2RND Generates generalized chi-squared  random numbers.
 	%
@@ -9,21 +9,21 @@ function r=gx2rnd(lambda,m,delta,sigma,c,varargin)
 	% >A method to integrate and classify normal distributions</a>.
 	%
 	% Usage:
-	% r=gx2rnd(lambda,m,delta,sigma,c)
-	% r=gx2rnd(lambda,m,delta,sigma,c,sz)
-	% r=gx2rnd(lambda,m,delta,sigma,c,sz1,sz2,...)
-	% r=gx2rnd(lambda,m,delta,sigma,c,[sz1,sz2,...])
+	% r=gx2rnd(w,k,lambda,m,s)
+	% r=gx2rnd(w,k,lambda,m,s,sz)
+	% r=gx2rnd(w,k,lambda,m,s,sz1,sz2,...)
+	% r=gx2rnd(w,k,lambda,m,s,[sz1,sz2,...])
 	%
 	% Example:
 	% r=gx2rnd([1 -5 2],[1 2 3],[2 3 7],5,1,5)
 	%
 	% Required inputs:
-	% lambda    row vector of coefficients of the non-central chi-squares
-	% m         row vector of degrees of freedom of the non-central chi-squares
-	% delta     row vector of non-centrality paramaters (sum of squares of
+	% w         row vector of weights of the non-central chi-squares
+	% k         row vector of degrees of freedom of the non-central chi-squares
+	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% sigma     sd of normal term
-	% c         constant term
+	% m         mean of normal term
+    % s         sd of normal term
 	%
 	% Optional positional input:
 	% sz        size(s) of the requested array
@@ -38,18 +38,18 @@ function r=gx2rnd(lambda,m,delta,sigma,c,varargin)
 	
 	parser=inputParser;
 	parser.KeepUnmatched=true;
+	addRequired(parser,'w',@(x) isreal(x) && isrow(x));
+	addRequired(parser,'k',@(x) isreal(x) && isrow(x));
 	addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'m',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'delta',@(x) isreal(x) && isrow(x));
-	addRequired(parser,'sigma',@(x) isreal(x) && isscalar(x));
-	addRequired(parser,'c',@(x) isreal(x) && isscalar(x));
-	parse(parser,lambda,m,delta,sigma,c);
+	addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
+	addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
+	parse(parser,w,k,lambda,m,s);
 	
-	ncxs=arrayfun(@(l,m,d) l*ncx2rnd(m,d,varargin{:}),lambda,m,delta,'un',0);
+	ncxs=arrayfun(@(l,k,d) l*ncx2rnd(k,d,varargin{:}),w,k,lambda,'un',0);
 	
 	r=zeros(size(ncxs{1}));
 	for i=1:length(ncxs)
 		r=r+ncxs{i};
 	end
-	r=r+normrnd(c,sigma,varargin{:});
+	r=r+normrnd(m,s,varargin{:});
 	
