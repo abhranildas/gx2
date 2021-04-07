@@ -1,4 +1,4 @@
-# Generalized chi-square distribution [![View Generalized chi-square distribution on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/74663-generalized-chi-square-distribution)
+# Generalized chi-square distribution [![View Generalized chi-square distribution on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/85028-generalized-chi-square-distribution)
 Matlab toolbox to compute the statistics, pdf, cdf, inverse cdf and random numbers of the generalized chi-square distribution.
 
 ## Author
