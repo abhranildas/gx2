@@ -75,9 +75,9 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
         span=nan(1,length(w));
         for i=1:length(w)
             [mu,v]=gx2stat(w(i),k(i),lambda(i),0,0);
-            span(i)=abs(mu)+10*sqrt(v);
+            span(i)=abs(mu)+50*sqrt(v);
         end
-        span=max([span,5*s]);
+        span=max([span,50*s]);
         xfull=-span:dx:span;
         
         ncpdfs=nan(length(w),length(xfull));
