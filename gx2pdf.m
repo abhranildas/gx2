@@ -61,7 +61,7 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
     addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
     [~,v]=gx2stat(w,k,lambda,m,s);
-    addParameter(parser,'dx',sqrt(v)/100,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
+    addParameter(parser,'dx',sqrt(v)/500,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
     parse(parser,x,w,k,lambda,m,s,varargin{:});
     dx=parser.Results.dx;
     method=parser.Results.method;
