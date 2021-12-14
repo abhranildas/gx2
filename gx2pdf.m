@@ -22,7 +22,8 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     %
     % Required inputs:
     % x         points at which to evaluate the pdf, or 'full', to return
-    %           points xfull and f over a full range of the pdf
+    %           points xfull and f over a full range of the pdf (this uses
+    %           the 'conv' method)
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
     % lambda    row vector of non-centrality paramaters (sum of squares of
