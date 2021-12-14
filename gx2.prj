@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.toolbox" plugin-version="1.0">
-  <configuration build-checksum="1497976882" file="G:\My Drive\Geisler Lab\gx2\gx2.prj" location="G:\My Drive\Geisler Lab\gx2" name="gx2" target="target.toolbox" target-name="Package Toolbox">
+  <configuration build-checksum="1749913643" file="G:\My Drive\Geisler Lab\gx2\gx2.prj" location="G:\My Drive\Geisler Lab\gx2" name="gx2" target="target.toolbox" target-name="Package Toolbox">
     <param.appname>Generalized chi-square distribution</param.appname>
     <param.authnamewatermark>Abhranil Das</param.authnamewatermark>
     <param.email>abhranil.das@utexas.edu</param.email>
@@ -7,7 +7,7 @@
     <param.summary>Compute the statistics, pdf, cdf, inverse cdf and random numbers of the generalized chi-square distribution.</param.summary>
     <param.description>The generalized chi-square variable is a quadratic form of a normal variable, or equivalently, a linear sum of independent non-central chi-square variables and a normal variable. Try the Getting Started guide for a quick demo of all the functions.</param.description>
     <param.screenshot>${PROJECT_ROOT}\gx2_icon.png</param.screenshot>
-    <param.version>1.8.3</param.version>
+    <param.version>1.8.4</param.version>
     <param.output>${PROJECT_ROOT}\Generalized chi-square distribution.mltbx</param.output>
     <param.products.name>
       <item>Statistics and Machine Learning Toolbox</item>
