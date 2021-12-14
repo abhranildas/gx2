@@ -57,7 +57,7 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
-    addParameter(parser,'method','conv',@(s) strcmpi(s,'conv') || strcmpi(s,'diff'));
+    addParameter(parser,'method','diff',@(s) strcmpi(s,'diff') || strcmpi(s,'conv'));
     addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
     addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
     [~,v]=gx2stat(w,k,lambda,m,s);
@@ -94,6 +94,9 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
         end
         
         f=ifft(prod(fft(ncpdfs,[],2),1));
+        if any(isnan(f))||any(isinf(f))
+            error('Convolution method failed. Try differentiation method.')
+        end
         if ~mod(size(ncpdfs,1),2)
             f=ifftshift(f);
         end
