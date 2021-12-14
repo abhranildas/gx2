@@ -32,9 +32,9 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     % s         sd of normal term
     %
     % Optional name-value inputs:
-    % method    'conv' (default) for convolving noncentral chi-square
-    %           pdf's, or 'diff' for differentiating the generalized
-    %           chi-square cdf (slower)
+    % method    'diff' (default) for differentiating the generalized 
+    %           chi-square cdf, or 'conv' for convolving noncentral 
+    %           chi-square pdf's
     % dx        step-size of fineness (for convolving or differentiating)
     % AbsTol    absolute error tolerance for the output when using 'diff'
     % RelTol    relative error tolerance for the output when using 'diff'
