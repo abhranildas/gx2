@@ -12,13 +12,13 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     % Usage:
     % f=gx2pdf(x,w,k,lambda,m,s)
     % f=gx2pdf(x,w,k,lambda,m,s,'dx',1e-3)
-    % [f,x]=gx2pdf('full',w,k,lambda,m,s)
-    % f=gx2pdf(x,w,k,lambda,m,s,'method','diff','AbsTol',0,'RelTol',1e-7)
+    % [f,xfull]=gx2pdf('full',w,k,lambda,m,s)
+    % f=gx2pdf(x,w,k,lambda,m,s,'method','conv','AbsTol',0,'RelTol',1e-7)
     %
     % Example:
     % f=gx2pdf(25,[1 -5 2],[1 2 3],[2 3 7],5,0)
-    % f=gx2pdf([17 25],[1 -5 2],[1 2 3],[2 3 7],5,0,'method','diff')
-    % [f,x]=gx2pdf('full',[1 -5 2],[1 2 3],[2 3 7],5,0)
+    % f=gx2pdf([17 25],[1 -5 2],[1 2 3],[2 3 7],5,0,'method','conv')
+    % [f,xfull]=gx2pdf('full',[1 -5 2],[1 2 3],[2 3 7],5,0)
     %
     % Required inputs:
     % x         points at which to evaluate the pdf, or 'full', to return
