@@ -54,8 +54,8 @@ function [w,k,lambda,m,s]=gx2_params_norm_quad(mu,v,quad)
 	d=diag(D)';
 	b=(R'*q1)';
 	
-	[w,~,ic]=unique(nonzeros(d)'); % unique non-zero eigenvalues
+	[w,~,ic]=uniquetol(nonzeros(d)'); % unique non-zero eigenvalues
 	k=accumarray(ic,1)'; % total dof of each eigenvalue
 	lambda=arrayfun(@(x) sum((b(d==x)).^2),w)./(4*w.^2); % total non-centrality for each eigenvalue
-	m=q0-dot(w,lambda);
+    m=q0-dot(w,lambda);
     s=norm(b(~d));

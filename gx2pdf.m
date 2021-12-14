@@ -61,7 +61,7 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
     addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
     [~,v]=gx2stat(w,k,lambda,m,s);
-    addParameter(parser,'dx',sqrt(v)/500,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
+    addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
     parse(parser,x,w,k,lambda,m,s,varargin{:});
     dx=parser.Results.dx;
     method=parser.Results.method;
@@ -74,17 +74,21 @@ function [f,xfull]=gx2pdf(x,w,k,lambda,m,s,varargin)
     elseif strcmp(method,'conv')
         span=nan(1,length(w));
         for i=1:length(w)
-            [mu,v]=gx2stat(w(i),k(i),lambda(i),0,0);
-            span(i)=abs(mu)+50*sqrt(v);
+            span(i)=gx2inv(1-eps,abs(w(i)),k(i),lambda(i),0,0);
         end
-        span=max([span,50*s]);
+        if s
+            span=[span,2*norminv(1-eps,0,s)];
+        end
+        span=max(2*span);
+        span=span-mod(span,dx); % to center around 0
         xfull=-span:dx:span;
         
         ncpdfs=nan(length(w),length(xfull));
         for i=1:length(w)
-            ncpdfs(i,:)=gx2pdf(xfull,w(i),k(i),lambda(i),0,0);
+            pdf=gx2pdf(xfull,w(i),k(i),lambda(i),0,0);
+            pdf(isinf(pdf))=max(pdf(~isinf(pdf)));
+            ncpdfs(i,:)=pdf;
         end
-        
         if s
             ncpdfs=[ncpdfs;normpdf(xfull,0,abs(s))];
         end
