@@ -58,6 +58,8 @@ function x=gx2inv(p,w,k,lambda,m,s,varargin)
 			x=ncx2inv(p,sum(k),sum(lambda))*unique(w)+m;
 		elseif sign(unique(w))==-1
 			x=ncx2inv(1-p,sum(k),sum(lambda))*unique(w)+m;
+        elseif unique(w)==0
+            x=0;
 		end
 	else
 		mu=gx2stat(w,k,lambda,s,m);

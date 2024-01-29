@@ -1,4 +1,4 @@
-function [f,xgrid]=gx2pdf(x,w,k,lambda,m,s,varargin)
+function [f,xgrid]=gx2pdf_conv(x,w,k,lambda,m,s,varargin)
 
     % GX2PDF Returns the pdf of a generalized chi-squared (a weighted sum of
     % non-central chi-squares and a normal).
@@ -58,31 +58,67 @@ function [f,xgrid]=gx2pdf(x,w,k,lambda,m,s,varargin)
     addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
-    addParameter(parser,'method','auto');
-    addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
-    addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-    addParameter(parser,'xrange',[],@(x) isscalar(x) && (x>0));
-    [~,v]=gx2stat(w,k,lambda,m,s);
+    % range of x over which to compute ifft.
+    % default span is upto 4 sd from mean
+    [mu,v]=gx2stat(w,k,lambda,m,s);
+    addParameter(parser,'xrange',max(abs(mu+[-1 1]*4*sqrt(v))),@(x) isscalar(x) && (x>0));
+    % number of grid points for ifft
     addParameter(parser,'n_grid',1e4+1,@(x) isscalar(x) && (x>0));
-    addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
     parse(parser,x,w,k,lambda,m,s,varargin{:});
 
-    method=parser.Results.method;
+    xrange=parser.Results.xrange;
+        
+    w_idx=find(w); % non-zero w indices
 
-    if strcmpi(x,'full')
-        method='conv';
+    if isempty(xrange) % no xrange provided
+
+        % find the xrange over which to convolve
+        % xrange is a length that covers the
+        % widest of the constituent pdfs
+        xrange=nan(1,nnz(w));
+        for i=1:nnz(w)
+            xrange(i)=gx2inv(1-eps,abs(w(w_idx(i))),k(w_idx(i)),lambda(w_idx(i)),0,0);
+        end
+        if s
+            xrange=[xrange,2*norminv(1-eps,0,s)];
+        end
+        xrange=max(2*xrange);
+        xrange=xrange-mod(xrange,dx); % to center around 0
     end
 
-    if ~s && length(unique(w))==1 && ~strcmpi(x,'full')
-        f=ncx2pdf((x-m)/unique(w),sum(k),sum(lambda))/abs(unique(w));
-    elseif strcmpi(method,'ifft')
-        [f,xgrid]=gx2pdf_ifft(x,w,k,lambda,m,s,varargin{:});
-    elseif strcmpi(method,'conv')
-        [f,xgrid]=gx2pdf_conv(x,w,k,lambda,m,s,varargin{:});
-    elseif strcmpi(method,'diff')
-        p_left=gx2cdf(x-dx,w,k,lambda,m,s,varargin{:});
-        p_right=gx2cdf(x+dx,w,k,lambda,m,s,varargin{:});
-        f=(p_right-p_left)/(2*dx);
-        f=max(f,0);
+    dx=parser.Results.dx;
+    n_grid=round(parser.Results.n_grid);
+    % make n_grid odd
+    if mod(n_grid,2)
+        n_grid=n_grid+1;
+    end
+    xgrid=-xrange:dx:xrange;
+    xgrid=linspace(-xrange,xrange,n_grid);
+    dx=2*xrange/n_grid;
+
+    % compute non-central and normal pdf's
+    % over this span
+    ncpdfs=nan(nnz(w),length(xgrid));
+    for i=1:nnz(w)
+        pdf=gx2pdf(xgrid,w(w_idx(i)),k(w_idx(i)),lambda(w_idx(i)),0,0);
+        pdf(isinf(pdf))=max(pdf(~isinf(pdf)));
+        ncpdfs(i,:)=pdf;
+    end
+    if s
+        ncpdfs=[ncpdfs;normpdf(xgrid,0,abs(s))];
+    end
+    f=ifft(prod(fft(ncpdfs,[],2),1));
+    if any(isnan(f))||any(isinf(f))
+        error('Convolution method failed. Try differentiation method.')
+    end
+    if ~mod(size(ncpdfs,1),2)
+        f=ifftshift(f);
+    end
+    f=f/(sum(f)*dx);
+    xgrid=xgrid+m;
+
+    if ~strcmpi(x,'full')
+        F=griddedInterpolant(xgrid,f);
+        f=F(x);
     end
 end

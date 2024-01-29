@@ -1,7 +1,7 @@
-function [w,k,lambda,m,s]=gx2_params_norm_quad(mu,v,quad)
+function [w,k,lambda,m,s]=norm_quad_to_gx2_params(mu,v,quad)
 	
-	% GX2_PARAMS_NORM_QUAD A quadratic form of a normal variable is distributed
-	% as a generalized chi-squared. This function takes the normal parameters
+	% NORM_QUAD_TO_GX2_PARAMS A quadratic form of a normal vector is distributed
+	% as a generalized chi-squared. This function takes the multinormal parameters
 	% and the quadratic coeffs and returns the parameters of the generalized
 	% chi-squared.
 	%

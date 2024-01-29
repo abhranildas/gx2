@@ -1,4 +1,4 @@
-function [f,xgrid]=gx2pdf(x,w,k,lambda,m,s,varargin)
+function [f,xgrid]=gx2pdf_ifft(x,w,k,lambda,m,s,varargin)
 
     % GX2PDF Returns the pdf of a generalized chi-squared (a weighted sum of
     % non-central chi-squares and a normal).
@@ -58,31 +58,46 @@ function [f,xgrid]=gx2pdf(x,w,k,lambda,m,s,varargin)
     addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
-    addParameter(parser,'method','auto');
-    addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
-    addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
-    addParameter(parser,'xrange',[],@(x) isscalar(x) && (x>0));
-    [~,v]=gx2stat(w,k,lambda,m,s);
+    % range of x over which to compute ifft.
+    % default span is upto 4 sd from mean
+    [mu,v]=gx2stat(w,k,lambda,m,s);
+    addParameter(parser,'xrange',max(abs(mu+[-1 1]*4*sqrt(v))),@(x) isscalar(x) && (x>0));
+    % number of grid points for ifft
     addParameter(parser,'n_grid',1e4+1,@(x) isscalar(x) && (x>0));
-    addParameter(parser,'dx',sqrt(v)/1e4,@(x) isreal(x) && isscalar(x) && (x>=0)); % default derivative step-size is sd/100.
     parse(parser,x,w,k,lambda,m,s,varargin{:});
-
-    method=parser.Results.method;
-
-    if strcmpi(x,'full')
-        method='conv';
+    
+    n_grid=round(parser.Results.n_grid);
+    % make n_grid odd
+    if mod(n_grid,2)
+        n_grid=n_grid+1;
     end
 
-    if ~s && length(unique(w))==1 && ~strcmpi(x,'full')
-        f=ncx2pdf((x-m)/unique(w),sum(k),sum(lambda))/abs(unique(w));
-    elseif strcmpi(method,'ifft')
-        [f,xgrid]=gx2pdf_ifft(x,w,k,lambda,m,s,varargin{:});
-    elseif strcmpi(method,'conv')
-        [f,xgrid]=gx2pdf_conv(x,w,k,lambda,m,s,varargin{:});
-    elseif strcmpi(method,'diff')
-        p_left=gx2cdf(x-dx,w,k,lambda,m,s,varargin{:});
-        p_right=gx2cdf(x+dx,w,k,lambda,m,s,varargin{:});
-        f=(p_right-p_left)/(2*dx);
-        f=max(f,0);
+    n=(n_grid-1)/2;
+    idx=-n:n;
+
+    xrange=parser.Results.xrange;
+    dx=xrange/n;
+
+    dt=2*pi/(n_grid*dx);
+
+%     dt=.01;
+    t=idx*dt; % grid of points to evaluate characteristic function
+
+    phi=gx2char(-t,w,k,lambda,m,s);
+
+    f=fftshift(ifft(ifftshift(phi)))*n_grid*dt/(2*pi);
+
+    % grid of x over which this pdf is computed
+%     dx=2*pi/(n_grid*dt);
+    xgrid=idx*dx;
+
+    % normalize
+    f=f/(sum(f)*dx);
+
+    if ~strcmpi(x,'full')
+        F=griddedInterpolant(xgrid,f);
+        f=F(x);
     end
+
+    f=max(f,0);
 end

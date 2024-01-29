@@ -1,8 +1,10 @@
-function [p,errflag]=gx2cdf_imhof(x,w,k,lambda,m,s,varargin)
+function f=gx2pdf_ray_fast(x,w,k,lambda,m,s,varargin)
 
-    % GX2CDF_IMHOF Returns the cdf of a generalized chi-squared (a weighted
+    % GX2CDF_DAVIES Returns the cdf of a generalized chi-squared (a weighted
     % sum of non-central chi-squares and a normal), using Davies' [1973]
-    % method, which extends Imhof's [1961] method to include the s term.
+    % method, which is an extension of Imhof's [1961] method to include the
+    % s term, so Imhof's method is not separately available in the toolbox
+    % any more.
     %
     % Abhranil Das <abhranil.das@utexas.edu>
     % Center for Perceptual Systems, University of Texas at Austin
@@ -11,12 +13,12 @@ function [p,errflag]=gx2cdf_imhof(x,w,k,lambda,m,s,varargin)
     % >A method to integrate and classify normal distributions</a>.
     %
     % Usage:
-    % p=gx2cdf_imhof(x,w,k,lambda,m,s)
-    % p=gx2cdf_imhof(x,w,k,lambda,m,s,'upper')
-    % p=gx2cdf_imhof(x,w,k,lambda,m,s,'AbsTol',0,'RelTol',1e-7)
+    % p=gx2cdf_davies(x,w,k,lambda,m,s)
+    % p=gx2cdf_davies(x,w,k,lambda,m,s,'upper')
+    % p=gx2cdf_davies(x,w,k,lambda,m,s,'AbsTol',0,'RelTol',1e-7)
     %
     % Example:
-    % p=gx2cdf_imhof(25,[1 -5 2],[1 2 3],[2 3 7],5,0)
+    % p=gx2cdf_davies(25,[1 -5 2],[1 2 3],[2 3 7],5,0)
     %
     % Required inputs:
     % x         points at which to evaluate the cdf
@@ -34,8 +36,6 @@ function [p,errflag]=gx2cdf_imhof(x,w,k,lambda,m,s,varargin)
     % 'AbsTol'  absolute error tolerance for the output
     % 'RelTol'  relative error tolerance for the output
     %           The absolute OR the relative tolerance is satisfied.
-    % vpa       false (default) to do the integral numerically,
-    %           true to do it symbolically with variable precision.
     %
     % Outputs:
     % p         computed cdf
@@ -56,38 +56,43 @@ function [p,errflag]=gx2cdf_imhof(x,w,k,lambda,m,s,varargin)
     addRequired(parser,'lambda',@(x) isreal(x) && isrow(x));
     addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
     addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
-    addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
-    addParameter(parser,'vpa',false,@islogical);
-    addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
-    addParameter(parser,'RelTol',1e-6,@(x) isreal(x) && isscalar(x) && (x>=0));
+    addParameter(parser,'mc_samples',1e4);
 
     parse(parser,x,w,k,lambda,m,s,varargin{:});
-    side=parser.Results.side;
-    vpaflag=parser.Results.vpa;
-    AbsTol=parser.Results.AbsTol;
-    RelTol=parser.Results.RelTol;
+    mc_samples=parser.Results.mc_samples;
 
-    % compute the integral
-    if ~vpaflag
-        imhof_integral=arrayfun(@(x) integral(@(u) gx2cdf_imhof_integrand(u,x,w',k',lambda',m,s),0,inf,'AbsTol',AbsTol,'RelTol',RelTol),x);
-    else
-        syms u
-        imhof_integral=arrayfun(@(x) vpaintegral(@(u) gx2cdf_imhof_integrand(u,x,w',k',lambda',m,s),...
-            u,0,inf,'AbsTol',AbsTol,'RelTol',RelTol,'MaxFunctionCalls',inf),x);
-    end
+    y=x(:); % flatten input array x into a column vector of levels y
 
-    if strcmpi(side,'lower')
-        p=double(0.5-imhof_integral/pi);
-    elseif strcmpi(side,'upper')
-        p=double(0.5+imhof_integral/pi);
-    end
+    % find standard quadratic form corresponding to the gx2:
+    quad=gx2_to_norm_quad_params(w,k,lambda,m,s);
+    dim=numel(quad.q1);
 
-    errflag = p<0 | p>1;
-    if any(errflag)
-        warning('Imhof method gx2cdf output(s) too close to 0/1 to compute exactly, so clipping to 0/1. Check the flag output, and try stricter tolerances.')
-        p=max(p,0);
-        p=min(p,1);
-    end
+    % uniform random rays (points on n-sphere)
+    n_z=mvnrnd(zeros(dim,1),eye(dim),mc_samples)';
+    n_z=n_z./vecnorm(n_z,2);
 
+    % find the quadratic coefficients across all rays
+    q2=dot(n_z,quad.q2*n_z);
+    q1=quad.q1'*n_z;
+    q0=quad.q0;
 
+    % valid levels y for which there are roots
+    valid_idx=(sign(q2).*y > sign(q2).*(q0-q1.^2./(4*q2)));
+
+    % discriminant of the quadratic across rays and levels
+    delta2=q1.^2-4*q2.*(q0-y); % delta^2
+    delta=nan(size(delta2));
+    delta(valid_idx)=sqrt(delta2(valid_idx));
+
+    % roots across rays
+    z=(-q1+cat(3,-1,1).*delta)./(2*q2);
+
+    % 1. phi_ray at all roots across all rays
+    % 2. sum across two roots on each ray
+    % 3. divide by quadratic slope
+    % 4. add across rays, gives us pdf at each level
+    f=sum(sum(phi_ray(z,dim),3)./delta,2,'omitnan')/mc_samples;
+
+    % reshape flattened array to shape of input x
+    f=reshape(f,size(x));
 end
