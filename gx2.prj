@@ -69,7 +69,11 @@ LICENSE
     <param.matlabpath.excludes />
     <param.javaclasspath.excludes />
     <param.exported.on.package>false</param.exported.on.package>
-    <param.required.addons />
+    <param.required.addons>
+      <requiredaddons>
+        <requiredAddOn earliest="earliest" fromRepository="true" id="e4c06d76-0c0b-45c4-b11f-2487ad1c50b0" include="true" latest="latest">Integrate and Classify Normal Distributions</requiredAddOn>
+      </requiredaddons>
+    </param.required.addons>
     <param.matlab.project.id />
     <param.matlab.project.name />
     <param.release.start>R2020a</param.release.start>
@@ -99,7 +103,6 @@ LICENSE
       <param.matlabpath.excludes />
       <param.javaclasspath.excludes />
       <param.exported.on.package />
-      <param.required.addons />
       <param.matlab.project.id />
       <param.matlab.project.name />
       <param.release.current.only />
@@ -140,25 +143,7 @@ LICENSE
       <file>${PROJECT_ROOT}\norm_quad_to_gx2_params.m</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
-    <fileset.depfun.excluded>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\fibonacci_sphere.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\int_norm_ray.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\norm_prob_across_angles.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\norm_prob_across_rays.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\phi_ray.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\Phibar_ray_split.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\prob_dens_ray.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\prob_ray.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\prob_ray_sym.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\ray_trace_fun.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\rectangle_ray_trace.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\roots_ray_quad.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\samp_value.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\standard_fun_grad.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\standard_quad.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\standard_ray_fun.m</file>
-      <file>C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\IntClassNorm\standard_ray_trace.m</file>
-    </fileset.depfun.excluded>
+    <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
       <file location="${PROJECT_ROOT}" name="Generalized chi-square distribution.mltbx" optional="false">C:\Users\abhra\OneDrive - The University of Texas at Austin\Geisler Lab\gx2\Generalized chi-square distribution.mltbx</file>
