@@ -1,15 +1,18 @@
-function [w,k,lambda,m,s]=norm_quad_to_gx2_params(mu,v,quad)
+function [w,k,lambda,s,m]=norm_quad_to_gx2_params(mu,v,quad)
 	
 	% NORM_QUAD_TO_GX2_PARAMS A quadratic form of a normal vector is distributed
 	% as a generalized chi-squared. This function takes the multinormal parameters
-	% and the quadratic coeffs and returns the parameters of the generalized
+	% and the quadratic coefficients and returns the parameters of the generalized
 	% chi-squared.
 	%
-	% Abhranil Das <abhranil.das@utexas.edu>
-	% Center for Perceptual Systems, University of Texas at Austin
-	% If you use this code, please cite:
-	% <a href="matlab:web('https://arxiv.org/abs/2012.14331')"
-	% >A method to integrate and classify normal distributions</a>.
+    % Abhranil Das
+    % Center for Perceptual Systems, University of Texas at Austin
+    % Comments, questions, bugs to abhranil.das@utexas.edu
+    % If you use this code, please cite:
+    % 1. <a href="matlab:web('https://arxiv.org/abs/2012.14331')"
+    % >A method to integrate and classify normal distributions</a>
+    % 2. <a href="matlab:web('https://arxiv.org/abs/2404.05062')"
+    % >New methods for computing the generalized chi-square distribution</a>
 	%
 	% Example:
 	% mu=[1;2]; % mean
@@ -19,7 +22,7 @@ function [w,k,lambda,m,s]=norm_quad_to_gx2_params(mu,v,quad)
 	% quad.q1=[-1;0];
 	% quad.q0=-1;
 	%
-	% [w,k,lambda,m,s]=gx2_params_norm_quad(mu,v,quad)
+	% [w,k,lambda,s,m]=gx2_params_norm_quad(mu,v,quad)
 	%
 	% Required inputs:
 	% mu        column vector of normal mean
@@ -34,15 +37,11 @@ function [w,k,lambda,m,s]=norm_quad_to_gx2_params(mu,v,quad)
 	% k         row vector of degrees of freedom of the non-central chi-squares
 	% lambda    row vector of non-centrality paramaters (sum of squares of
 	%           means) of the non-central chi-squares
-	% m         mean of normal term
-    % s         sd of normal term
+    % s         scale of normal term
+    % m         offset
     %
     % See also:
-	% <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Interactive demos</a>
-	% gx2rnd
-	% gx2stat
-    % gx2cdf
-    % gx2pdf
+    % <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Getting Started guide</a>
 	
 	% standardize the space
 	q2s=0.5*(quad.q2+quad.q2'); % symmetrize q2

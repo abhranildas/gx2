@@ -4,10 +4,10 @@
     <param.authnamewatermark>Abhranil Das</param.authnamewatermark>
     <param.email>abhranil.das@utexas.edu</param.email>
     <param.company>The University of Texas at Austin</param.company>
-    <param.summary>Compute the statistics, pdf, cdf, inverse cdf and random numbers of the generalized chi-square distribution.</param.summary>
+    <param.summary>Compute the statistics, pdf, cdf, inverse cdf, random numbers and characteristic function of the generalized chi-square distribution.</param.summary>
     <param.description>The generalized chi-square variable is a quadratic form of a normal variable, or equivalently, a linear sum of independent non-central chi-square variables and a normal variable. Try the Getting Started guide for a quick demo of all the functions.</param.description>
     <param.screenshot>${PROJECT_ROOT}\gx2_icon.png</param.screenshot>
-    <param.version>1.8.8</param.version>
+    <param.version>2.0.0</param.version>
     <param.output>${PROJECT_ROOT}\Generalized chi-square distribution.mltbx</param.output>
     <param.products.name>
       <item>Statistics and Machine Learning Toolbox</item>
@@ -123,24 +123,31 @@ LICENSE
     <fileset.rootfiles>
       <file>${PROJECT_ROOT}\demos.xml</file>
       <file>${PROJECT_ROOT}\doc</file>
+      <file>${PROJECT_ROOT}\gx2_ellipse.m</file>
+      <file>${PROJECT_ROOT}\gx2_ifft.m</file>
+      <file>${PROJECT_ROOT}\gx2_imhof.m</file>
+      <file>${PROJECT_ROOT}\gx2_imhof_integrand.m</file>
+      <file>${PROJECT_ROOT}\gx2_ray_integrand.m</file>
+      <file>${PROJECT_ROOT}\gx2_ruben.m</file>
       <file>${PROJECT_ROOT}\gx2_to_norm_quad_params.m</file>
       <file>${PROJECT_ROOT}\gx2cdf.m</file>
-      <file>${PROJECT_ROOT}\gx2cdf_imhof.m</file>
-      <file>${PROJECT_ROOT}\gx2cdf_imhof_integrand.m</file>
       <file>${PROJECT_ROOT}\gx2cdf_pearson.m</file>
       <file>${PROJECT_ROOT}\gx2cdf_ray.m</file>
-      <file>${PROJECT_ROOT}\gx2cdf_ruben.m</file>
       <file>${PROJECT_ROOT}\gx2char.m</file>
       <file>${PROJECT_ROOT}\gx2inv.m</file>
+      <file>${PROJECT_ROOT}\gx2pdf.asv</file>
       <file>${PROJECT_ROOT}\gx2pdf.m</file>
-      <file>${PROJECT_ROOT}\gx2pdf_conv.m</file>
-      <file>${PROJECT_ROOT}\gx2pdf_ifft.m</file>
-      <file>${PROJECT_ROOT}\gx2pdf_imhof.m</file>
-      <file>${PROJECT_ROOT}\gx2pdf_imhof_integrand.m</file>
-      <file>${PROJECT_ROOT}\gx2pdf_ray_fast.m</file>
+      <file>${PROJECT_ROOT}\gx2pdf_ray.m</file>
       <file>${PROJECT_ROOT}\gx2rnd.m</file>
       <file>${PROJECT_ROOT}\gx2stat.m</file>
+      <file>${PROJECT_ROOT}\int_norm_ray.m</file>
+      <file>${PROJECT_ROOT}\log_gx2cdf.m</file>
+      <file>${PROJECT_ROOT}\norm_prob_across_angles.m</file>
+      <file>${PROJECT_ROOT}\norm_prob_across_rays.m</file>
       <file>${PROJECT_ROOT}\norm_quad_to_gx2_params.m</file>
+      <file>${PROJECT_ROOT}\phi_ray.m</file>
+      <file>${PROJECT_ROOT}\Phibar_ray_split.m</file>
+      <file>${PROJECT_ROOT}\standard_quad.m</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded />
