@@ -7,7 +7,7 @@ parser.KeepUnmatched=true;
 addRequired(parser,'mu',@isnumeric);
 addRequired(parser,'v',@isnumeric);
 addRequired(parser,'dom');
-addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
+addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'dom_type','quad');
 addParameter(parser,'output','prob',@(x) strcmpi(x,'prob') || strcmpi(x,'prob_dens') );
 addParameter(parser,'force_mc',false,@islogical);
@@ -18,7 +18,7 @@ addParameter(parser,'AbsTol',1e-10);
 addParameter(parser,'RelTol',1e-2);
 addParameter(parser,'vpa',false,@islogical);
 addParameter(parser,'n_rays',500);
-addParameter(parser,'add_bd_pts',false);
+addParameter(parser,'bd_pts',false);
 addParameter(parser,'gpu_batch',4e7);
 
 parse(parser,mu,v,dom,varargin{:});
@@ -34,7 +34,7 @@ gpu_batch=parser.Results.gpu_batch;
 isgpu=canUseGPU();
 dim=length(mu);
 
-if parser.Results.add_bd_pts
+if parser.Results.bd_pts
     global bd_pts
 end
 bd_pts=[];

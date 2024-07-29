@@ -6,13 +6,13 @@ function [p_angles,bd_pts_angles]=norm_prob_across_angles(mu,v,dom,varargin)
     addRequired(parser,'mu',@isnumeric);
     addRequired(parser,'v',@isnumeric);
     addRequired(parser,'dom',@(x) isstruct(x) || isa(x,'function_handle') || ismatrix(x));
-    addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
+    addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
     addParameter(parser,'dom_type','quad');
     addParameter(parser,'output','prob'); % probability or probability density
     addParameter(parser,'fun_span',5);
     addParameter(parser,'fun_resol',100);
     addParameter(parser,'n_bd_pts',500);
-    addParameter(parser,'add_bd_pts',false);
+    addParameter(parser,'bd_pts',false);
     addParameter(parser,'theta',nan,@isnumeric);
     addParameter(parser,'phi',nan,@isnumeric);
     addParameter(parser,'psi',nan,@isnumeric);

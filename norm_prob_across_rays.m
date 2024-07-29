@@ -7,7 +7,7 @@ addRequired(parser,'mu',@isnumeric);
 addRequired(parser,'v',@isnumeric);
 addRequired(parser,'dom',@(x) isstruct(x) || isa(x,'function_handle') || ismatrix(x));
 addRequired(parser,'n_z',@isnumeric);
-addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
+addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','prob',@(x) strcmpi(x,'prob') || strcmpi(x,'prob_dens') );
 addParameter(parser,'dom_type','quad');
 addParameter(parser,'vpa',false,@islogical);
@@ -16,7 +16,7 @@ addParameter(parser,'fun_span',5);
 addParameter(parser,'fun_resol',100);
 addParameter(parser,'fun_grad',[],@(x) isa(x,'function_handle'));
 addParameter(parser,'n_bd_pts',1e4);
-addParameter(parser,'add_bd_pts',false);
+addParameter(parser,'bd_pts',false);
 
 parse(parser,mu,v,dom,n_z,varargin{:});
 
@@ -29,7 +29,7 @@ dim=length(mu);
 n_z=n_z./vecnorm(n_z,2,1);
 
 % ray-trace if necessary
-if ~strcmpi(dom_type,'quad') || parser.Results.add_bd_pts
+if ~strcmpi(dom_type,'quad') || parser.Results.bd_pts
     % ray-trace the standardized domain/function
     dom_standard_raytrace=@(n) standard_ray_trace(dom,n,varargin{:},'mu',mu,'v',v);
 
@@ -79,7 +79,7 @@ else
     end
 end
 
-if parser.Results.add_bd_pts
+if parser.Results.bd_pts
     % standard boundary points
     std_bd_pts_ray=cellfun(@(z_ray,n_ray) z_ray.*n_ray, z,num2cell(n_z,1),'un',0);
 

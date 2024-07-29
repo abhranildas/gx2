@@ -8,7 +8,7 @@ parser.KeepUnmatched=true;
 addRequired(parser,'x',@isnumeric); % points at which to find the cdf/pdf
 addRequired(parser,'n_z',@isnumeric);
 addRequired(parser,'quad',@isstruct);
-addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
+addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','prob'); % probability or probability density
 addParameter(parser,'vpa',false,@islogical);
 
