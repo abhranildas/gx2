@@ -11,6 +11,7 @@ function [p,p_err]=gx2cdf_ray(x,w,k,lambda,s,m,varargin)
     addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 
     parse(parser,x,w,k,lambda,s,m,varargin{:});
+    side=parser.Results.side;
 
     y=x(:); % flatten input array x into a column vector of levels y
 
@@ -21,8 +22,8 @@ function [p,p_err]=gx2cdf_ray(x,w,k,lambda,s,m,varargin)
     mu=zeros(dim,1);
     v=eye(dim);
 
-    % integrate with 'complement' for lower side.
-    [p,p_err]=int_norm_ray(mu,v,quad,varargin{:},'fun_level',y);
+    % integrate with 'lower' for lower side.
+    [p,p_err]=int_norm_ray(mu,v,quad,varargin{:},'side',side,'fun_level',y);
 
     % reshape flattened output arrays to shape of input x
     p=reshape(p,size(x));
