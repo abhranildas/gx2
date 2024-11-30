@@ -1,4 +1,4 @@
-function [p,xgrid]=gx2_ifft(x,w,k,lambda,s,m,varargin)
+function [p,xgrid]=gx2_ifft_old(x,w,k,lambda,s,m,varargin)
 
 parser=inputParser;
 parser.KeepUnmatched=true;
@@ -17,8 +17,7 @@ if strcmpi(x,'full')
     span=max(abs(mu+[-1 1]*100*sqrt(v)));
 else
     % default span is 100* input span
-    % span=100*max(abs(x(:)));
-    span=1e5;
+    span=100*max(abs(x(:)));
 end
 addParameter(parser,'span',span,@(x) isscalar(x) && (x>0));
 % number of grid points for ifft
@@ -37,12 +36,7 @@ n=(n_grid-1)/2;
 idx=-n:n;
 dx=span/n;
 
-if strcmpi(x,'full')
-    x_mid=0;
-else
-    x_mid=(min(x(:))+max(x(:)))/2;
-end
-xgrid=x_mid+idx*dx; % grid of x over which this cdf/pdf is computed
+xgrid=idx*dx; % grid of x over which this cdf/pdf is computed
 
 if strcmpi(parser.Results.ft_type,'dft')
     % compute non-central and normal pdf's over this span
@@ -70,10 +64,9 @@ elseif strcmpi(parser.Results.ft_type,'cft')
     phi=gx2char(-t,w,k,lambda,s,m);
 
     if strcmpi(parser.Results.output,'pdf')
-        phi=phi.*exp(1i*x_mid*dt*idx);
         p=fftshift(ifft(ifftshift(phi)))/dx;
     elseif strcmpi(parser.Results.output,'cdf')
-        phi=phi./(1i*t).*exp(1i*x_mid*dt*idx);
+        phi=phi./(1i*t);
         phi(isinf(phi))=0;
         p=0.5+fftshift(ifft(ifftshift(phi)))/dx;
     end

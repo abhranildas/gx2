@@ -1,4 +1,4 @@
-function [p_rays,p_sym_sum,sym_idx]=gx2_ray_integrand(x,n_z,quad,varargin)
+function [p_rays,p_tiny_sum,sym_idx]=gx2_ray_integrand(x,n_z,quad,varargin)
 % return the differential probability or probability density on each ray
 % that is integrated across rays
 
@@ -10,15 +10,16 @@ addRequired(parser,'n_z',@isnumeric);
 addRequired(parser,'quad',@isstruct);
 addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','prob'); % probability or probability density
-addParameter(parser,'vpa',false,@islogical);
+addParameter(parser,'precision','log',@(x) strcmpi(x,'basic')||strcmpi(x,'log')||strcmpi(x,'vpa'));
 
 parse(parser,x,n_z,quad,varargin{:});
 
 output=parser.Results.output;
 side=parser.Results.side;
-vpaflag=parser.Results.vpa;
+precision=parser.Results.precision;
 
 dim=numel(quad.q1);
+n_levels=numel(x);
 
 % find the quadratic coefficients across all rays
 q2=dot(n_z,quad.q2*n_z,1);
@@ -42,23 +43,19 @@ end
 
 if strcmpi(output,'prob')
     init_sign_rays=sign(4*sign(q2)-2*sign(q1)+sign(q0-x));
-    [f_big,f_small]=Phibar_ray_split(z,dim);
-    p_rays_big=init_sign_rays+1+init_sign_rays.*(f_big(:,:,2)-f_big(:,:,1));
-    p_rays_small=init_sign_rays.*(f_small(:,:,2)-f_small(:,:,1));
+    [Phibar_big,Phibar_small]=Phibar_ray_split(z,dim);
+    p_rays_big=init_sign_rays+1+init_sign_rays.*(Phibar_big(:,:,2)-Phibar_big(:,:,1));
+    p_rays_small=init_sign_rays.*(Phibar_small(:,:,2)-Phibar_small(:,:,1));
     if strcmpi(side,'upper')
         p_rays=p_rays_big+p_rays_small;
     elseif strcmpi(side,'lower')
         p_rays=2-p_rays_big-p_rays_small;
     end
 elseif strcmpi(output,'prob_dens')
-
     % phi_ray at each root
     sum_phi=sum(phi_ray(z,dim),3,'omitnan');
 
     % quadratic slope at each root
-    % quad_slope=nan(numel(x),size(n_z,2));
-    % quad_slope(quad_root_exists)=delta(quad_root_exists);
-    % quad_slope(linear_root_exists)=abs(q1(linear_root_exists));
     quad_slope=nan(size(delta2));
     quad_slope(root_exists)=sqrt(delta2(root_exists)); % slope is the same formula at quad and linear roots
 
@@ -68,27 +65,71 @@ elseif strcmpi(output,'prob_dens')
     p_rays(isnan(p_rays))=0;
 end
 
-p_sym_sum=num2cell(zeros(numel(x),1));
-sym_idx=[];
 % cases where root exists but computed prob. is 0,
 tiny_probs=root_exists&(~p_rays);
-if nnz(tiny_probs)
-    if ~vpaflag
-        warning("%.1f%% of rays contain probabilities smaller than realmin=1e-308, returning 0. Set 'vpa' to true to compute these with variable precision.",100*mean(tiny_probs,'all'))
-    else
+
+if strcmpi(precision,'basic')
+    if nnz(tiny_probs)
+        warning("%.1f%% of rays contain probabilities less than realmin=1e-308, returning 0. Set 'precision' to 'log' or 'vpa' to compute these.",100*mean(tiny_probs,'all'))
+    end
+elseif strcmpi(precision,'log')
+    % log sum exp of tiny probabilities
+    if strcmpi(output,'prob')
+        % roots where Phibar_small was tiny, or root pairs where they weren't tiny
+        % individually but cancelled
+        % tiny_probs=repmat(p_rays==0,[1 1 2])|(Phibar_small==0);
+        tiny_probs=repmat(tiny_probs,[1 1 2]);
+        z_tiny=nan(size(z));
+        z_tiny(tiny_probs)=z(tiny_probs);
+
+        z_tiny_signs=init_sign_rays.*sign(z_tiny).*cat(3,-1,1); % sign of contribution from each root
+        % z_tiny_signs=nan(size(z));
+        % z_tiny_signs(tiny_probs&~isnan(z_tiny))=all_signs(tiny_probs&~isnan(z_tiny));
+
+        % log of tiny Phibar smalls:
+        log_Phibar_small=(dim-2)*log10(abs(z_tiny))-z_tiny.^2/(2*log(10))-log10(gamma(dim/2)*2^(dim/2-1));
+
+        % log sum exp of tiny Phibar smalls with positive and negative signs:
+        log_Phibar_plus=nan(n_levels,1);
+        log_Phibar_minus=nan(n_levels,1);
+        for level=1:n_levels
+            log_Phibar_small_thislevel=log_Phibar_small(level,:,:);
+            log_Phibar_plus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==1));
+            log_Phibar_minus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==-1));
+        end
+
+        % now subtract minus from plus:
+        % 1. sign:
+        p_tiny_sign=2*((log_Phibar_plus>log_Phibar_minus)-.5);
+
+        % 2. magnitude:
+
+        % first find max and min of each pair element-wise
+        max_log=max(log_Phibar_plus,log_Phibar_minus);
+        min_log=min(log_Phibar_plus,log_Phibar_minus);
+
+        % then compute log10(|a - b|) using the formula
+        log_Phibar_abs=max_log + log10(abs(1 - 10.^(min_log - max_log)));
+        log_Phibar_abs(min_log==max_log)=-inf;
+        p_tiny_sum=p_tiny_sign.*log_Phibar_abs; % combine sign with the log
+        
+    end
+
+elseif strcmpi(precision,'vpa')
+    p_tiny_sign=[];
+    p_tiny_sum=num2cell(zeros(n_levels,1));
+    sym_idx=[];
+    if nnz(tiny_probs)
         sym_idx=any(tiny_probs,2); % levels at which at least one ray is sym.
         % group roots into a cell array so we can use cellfun:
         z_cell=permute(num2cell(permute(z,[1 3 2]),2),[1 3 2]);
         % remove nan roots:
         z_cell=cellfun(@(z_each) z_each(~isnan(z_each)),z_cell,'un',0);
         if strcmpi(output,'prob')
-            p_sym_sum(sym_idx)=sym2cell(sum(cellfun(@(init_sign_ray,z_ray) prob_ray_sym(init_sign_ray,z_ray,dim,side),num2cell(init_sign_rays(sym_idx,:)),z_cell(sym_idx,:)),2));
+            p_tiny_sum(sym_idx)=sym2cell(sum(cellfun(@(init_sign_ray,z_ray) prob_ray_sym(init_sign_ray,z_ray,dim,side),num2cell(init_sign_rays(sym_idx,:)),z_cell(sym_idx,:)),2));
         elseif strcmpi(output,'prob_dens')
-            % p_sym_sum(sym_idx)=sym2cell(arrayfun(@(iLevel) ...
-            %     sum(sum(phi_ray(sym(z(iLevel,tiny_probs(iLevel,:),:)),dim),3)./quad_slope(iLevel,tiny_probs(iLevel,:))),...
-            %     find(sym_idx)));
             p_sym=cellfun(@(z_ray,quad_slope_ray) sum(phi_ray(sym(z_ray),dim))/quad_slope_ray,z_cell(sym_idx,:),num2cell(quad_slope(sym_idx,:)));
-            p_sym_sum(sym_idx)=sym2cell(sum(p_sym,2,'omitnan'));
+            p_tiny_sum(sym_idx)=sym2cell(sum(p_sym,2,'omitnan'));
         end
     end
 end

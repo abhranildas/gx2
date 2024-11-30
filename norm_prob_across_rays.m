@@ -1,4 +1,4 @@
-function [p_rays,bd_pts_rays,p_sym_sum,sym_idx]=norm_prob_across_rays(mu,v,dom,n_z,varargin)
+function [p_rays,bd_pts_rays,p_tiny_sum,sym_idx]=norm_prob_across_rays(mu,v,dom,n_z,varargin)
 
 % parse inputs
 parser=inputParser;
@@ -10,7 +10,7 @@ addRequired(parser,'n_z',@isnumeric);
 addOptional(parser,'side','upper',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','prob',@(x) strcmpi(x,'prob') || strcmpi(x,'prob_dens') );
 addParameter(parser,'dom_type','quad');
-addParameter(parser,'vpa',false,@islogical);
+addParameter(parser,'precision','log',@(x) strcmpi(x,'basic')||strcmpi(x,'log')||strcmpi(x,'vpa'));
 addParameter(parser,'fun_level',0,@isnumeric);
 addParameter(parser,'fun_span',5);
 addParameter(parser,'fun_resol',100);
@@ -23,7 +23,7 @@ parse(parser,mu,v,dom,n_z,varargin{:});
 dom_type=parser.Results.dom_type;
 fun_level=parser.Results.fun_level;
 output=parser.Results.output;
-vpaflag=parser.Results.vpa;
+precision=parser.Results.precision;
 dim=length(mu);
 
 n_z=n_z./vecnorm(n_z,2,1);
@@ -41,10 +41,12 @@ if strcmpi(dom_type,'quad')
     % standardized boundary coefficients
     quad_s=standard_quad(dom,mu,v);
 
-    if ~vpaflag
+    if strcmpi(precision,'basic')
         p_rays=gx2_ray_integrand(fun_level,n_z,quad_s,varargin{:});
-    else
-        [p_rays,p_sym_sum,sym_idx]=gx2_ray_integrand(fun_level,n_z,quad_s,varargin{:});
+    elseif strcmpi(precision,'log')
+        [p_rays,p_tiny_sum]=gx2_ray_integrand(fun_level,n_z,quad_s,varargin{:});
+    elseif strcmpi(precision,'vpa')
+        [p_rays,p_tiny_sum,sym_idx]=gx2_ray_integrand(fun_level,n_z,quad_s,varargin{:});        
     end
 else
     if strcmpi(output,'prob')
@@ -55,7 +57,7 @@ else
             % notify to turn on vpa
             n_roots=cellfun(@(z) numel(z)>0,z);
             if nnz(n_roots&(~p_rays))
-                warning("Some rays contain probabilities smaller than realmin=1e-308, returning 0. Set 'vpa' to true to compute these with variable precision.")
+                warning("Some rays contain probabilities too small for double precision, returning 0. Set 'vpa' to true to compute these with variable precision.")
             end
         else
             p_rays=cellfun(@(init_sign_ray,z_ray) prob_ray(init_sign_ray,z_ray,dim,varargin{:}),num2cell(init_sign),z,'un',0);

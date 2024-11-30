@@ -23,7 +23,7 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % p=gx2cdf(25,[1 -5 2],[1 2 3],[2 3 7],0,5)
 %
 % Required inputs:
-% x         array of points at which to evaluate the CDF.
+% x         array of points at which to evaluate the cdf.
 %           'full' to use IFFT method to return p over an array of x that spans the distribution.
 %           if method is 'ellipse' and 'x_scale' is 'log', these are log10
 %           values of points measured from the finite tail, i.e.
@@ -37,14 +37,20 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % m         offset
 %
 % Optional positional input:
-% 'upper'   more accurate estimate of the complementary CDF when it's small
+% 'upper'   more accurate estimate of the complementary cdf when it's small.
+%           if 'method' is 'das', 'lower'/'upper' returns the lower
+%           tail approx. of the cdf, and upper tail approx. of the complementary
+%           cdf resp.
 %
 % Optional name-value inputs:
-% method    'auto' (default) tries to pick the best method for the parameters
-%           'imhof' for Imhof-Davies method, works for all parameters
-%           'ray' for ray-trace method, works for all parameters
-%           'ifft' for IFFT method, works for all parameters
+% method    'auto' (default) tries to pick the best method for the parameters.
+%           'imhof' for Imhof-Davies method.
+%           'ray' for ray-trace method.
+%           'ifft' for IFFT method.
 %           'ruben' for Ruben's method. All w must be same sign and s=0.
+%           'das' for Das's infinite-tail approximation.
+%           'pearson' for Imhof's extension to Pearson's 3-moment
+%           approximation, extended again to include m and s.
 %           'ellipse' for ellipse approximation. All w must be same sign and s=0.
 % vpa       true to use variable precision in Imhof and ray methods. Default=false.
 % AbsTol    absolute error tolerance for the output. Default=1e-10.
@@ -69,7 +75,7 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % x_scale   'linear' (default). 'log' if input x is log10 values of x, to compute on small x values.
 %
 % Outputs:
-% p         computed cdf.
+% p         computed cdf or complementary cdf.
 %           (if ray method with vpa) can be symbolic for small values
 %           (if ellipse method with 'log' x_scale) log10 of p
 % p_err     (if ray method with Monte-Carlo integration) standard error of the output p
@@ -110,7 +116,7 @@ if strcmpi(method,'auto')
         else
             p=ncx2cdf((x-m)/unique(w),sum(k),sum(lambda),'upper');
         end
-    elseif sum(w)==0 && s % only normal term
+    elseif sum(abs(w))==0 && s % only normal term
         if strcmpi(side,'lower')
             p=normcdf(x,m,s);
         elseif strcmpi(side,'upper')
@@ -142,6 +148,12 @@ elseif strcmpi(method,'ruben')
     else
         [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
     end
+elseif strcmpi(method,'das')
+    p=gx2_das(x,w,k,lambda,s,m,varargin{:});
+    p_err=[];
+elseif strcmpi(method,'pearson')
+    p=gx2_pearson(x,w,k,lambda,s,m,varargin{:});
+    p_err=[];
 elseif strcmpi(method,'ellipse')
     if s || ~(all(w>0)||all(w<0))
         error("The ellipse approximation can only be used when all w are the same sign and s=0.")
