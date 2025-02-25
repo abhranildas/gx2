@@ -89,4 +89,4 @@ if ~strcmpi(x,'full')
     p=F(x);
 end
 
-% f=max(f,0);
+p=max(p,0);

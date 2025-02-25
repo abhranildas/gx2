@@ -65,58 +65,90 @@ elseif strcmpi(output,'prob_dens')
     p_rays(isnan(p_rays))=0;
 end
 
-% cases where root exists but computed prob. is 0,
-tiny_probs=root_exists&(~p_rays);
+% now compute tiny probabilities or densities < realmin
+
+tiny_probs=root_exists&(~p_rays); % cases where root exists but computed prob. or density is 0
 
 if strcmpi(precision,'basic')
     if nnz(tiny_probs)
-        warning("%.1f%% of rays contain probabilities less than realmin=1e-308, returning 0. Set 'precision' to 'log' or 'vpa' to compute these.",100*mean(tiny_probs,'all'))
+        if strcmpi(output,'prob')
+            warning("%.1f%% of rays contain probabilities less than realmin=1e-308, returning 0. Set 'precision' to 'log' or 'vpa' to compute these.",100*mean(tiny_probs,'all'))
+        elseif strcmpi(output,'prob_dens')
+            warning("%.1f%% of rays contain probability densities less than realmin=1e-308, returning 0. Set 'precision' to 'log' or 'vpa' to compute these.",100*mean(tiny_probs,'all'))
+        end
     end
 elseif strcmpi(precision,'log')
-    % log sum exp of tiny probabilities
+    % find the roots where value was tiny.
+    % for prob, these are where Phibar_small was tiny, or where they weren't tiny
+    % individually but cancelled across the two roots
+    tiny_probs=repmat(tiny_probs,[1 1 2]);
+    z_tiny=nan(size(z));
+    z_tiny(tiny_probs)=z(tiny_probs);
+
     if strcmpi(output,'prob')
-        % roots where Phibar_small was tiny, or root pairs where they weren't tiny
-        % individually but cancelled
-        % tiny_probs=repmat(p_rays==0,[1 1 2])|(Phibar_small==0);
-        tiny_probs=repmat(tiny_probs,[1 1 2]);
-        z_tiny=nan(size(z));
-        z_tiny(tiny_probs)=z(tiny_probs);
-
-        z_tiny_signs=init_sign_rays.*sign(z_tiny).*cat(3,-1,1); % sign of contribution from each root
-        % z_tiny_signs=nan(size(z));
-        % z_tiny_signs(tiny_probs&~isnan(z_tiny))=all_signs(tiny_probs&~isnan(z_tiny));
-
-        % log of tiny Phibar smalls:
-        log_Phibar_small=(dim-2)*log10(abs(z_tiny))-z_tiny.^2/(2*log(10))-log10(gamma(dim/2)*2^(dim/2-1));
-
-        % log sum exp of tiny Phibar smalls with positive and negative signs:
-        log_Phibar_plus=nan(n_levels,1);
-        log_Phibar_minus=nan(n_levels,1);
-        for level=1:n_levels
-            log_Phibar_small_thislevel=log_Phibar_small(level,:,:);
-            log_Phibar_plus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==1));
-            log_Phibar_minus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==-1));
+        % sign of contribution from each root
+        z_tiny_signs=init_sign_rays.*sign(z_tiny).*cat(3,-1,1);
+        if strcmpi(side,'lower')
+            z_tiny_signs=-z_tiny_signs;
         end
 
-        % now subtract minus from plus:
-        % 1. sign:
-        p_tiny_sign=2*((log_Phibar_plus>log_Phibar_minus)-.5);
+        % log of tiny Phibar smalls:
+        p_tiny=nan(size(z_tiny));
 
-        % 2. magnitude:
+        % lower tail prob. of the chi distribution < realmin,
+        % z<sqrt(chi2inv(realmin,dim)), but we'll just use the median as
+        % an easy cutoff
+        z_med=sqrt(chi2inv(.5,dim));
+        z_tiny_lo=abs(z_tiny)<z_med;
+        p_tiny(z_tiny_lo)=dim*log10(abs(z_tiny(z_tiny_lo)))-log10(gamma(dim/2)*2^(dim/2-1)*dim);
 
-        % first find max and min of each pair element-wise
-        max_log=max(log_Phibar_plus,log_Phibar_minus);
-        min_log=min(log_Phibar_plus,log_Phibar_minus);
+        % upper tail prob. of the chi distribution < realmin:
+        % z_hi_thresh=sqrt(fzero(@(x) chi2cdf(x,dim,'upper') - realmin, [0, 1e6]));
+        z_tiny_hi=abs(z_tiny)>z_med;
+        p_tiny(z_tiny_hi)=(dim-2)*log10(abs(z_tiny(z_tiny_hi)))-z_tiny(z_tiny_hi).^2/(2*log(10))-log10(gamma(dim/2)*2^(dim/2-1));
 
-        % then compute log10(|a - b|) using the formula
-        log_Phibar_abs=max_log + log10(abs(1 - 10.^(min_log - max_log)));
-        log_Phibar_abs(min_log==max_log)=-inf;
-        p_tiny_sum=p_tiny_sign.*log_Phibar_abs; % combine sign with the log
-        
+        % log sum exp of tiny Phibar smalls with positive and negative signs:
+        % log_Phibar_plus=nan(n_levels,1);
+        % log_Phibar_minus=nan(n_levels,1);
+        % for level=1:n_levels
+        %     log_Phibar_small_thislevel=log_Phibar_small(level,:,:);
+        %     log_Phibar_plus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==1));
+        %     log_Phibar_minus(level)=log_sum_exp(log_Phibar_small_thislevel(z_tiny_signs(level,:,:)==-1));
+        % end
+        %
+        % % now subtract minus from plus:
+        % % 1. sign:
+        % p_tiny_sign=2*((log_Phibar_plus>log_Phibar_minus)-.5);
+        %
+        % % 2. magnitude:
+        %
+        % % first find max and min of each pair element-wise
+        % max_log=max(log_Phibar_plus,log_Phibar_minus);
+        % min_log=min(log_Phibar_plus,log_Phibar_minus);
+        %
+        % % then compute log10(|a - b|) using the formula
+        % log_Phibar_abs=max_log + log10(abs(1 - 10.^(min_log - max_log)));
+        % log_Phibar_abs(min_log==max_log)=-inf;
+        % p_tiny_sum=p_tiny_sign.*log_Phibar_abs; % combine sign with the log
+        % p_tiny_sum(log_Phibar_abs==-inf)=-inf;
+
+        % combine magnitude and sign
+        signed_p_tiny=p_tiny.*z_tiny_signs;
+
+        % now do signed log sum exp
+        p_tiny_sum=signed_log_sum_exp(signed_p_tiny,[2 3]);
+
+    elseif strcmpi(output,'prob_dens')
+        p_tiny=(dim-1)*log10(abs(z_tiny))-z_tiny.^2/(2*log(10))-log10(gamma(dim/2)*2^(dim/2-1));
+        p_tiny(isnan(p_tiny))=-inf;
+        % now divide by quad slope and sum using log sum exp
+        p_tiny_sum=signed_log_sum_exp(p_tiny,3)-log10(2*quad_slope);
+        p_tiny_sum=signed_log_sum_exp(p_tiny_sum,2);
     end
 
+
+
 elseif strcmpi(precision,'vpa')
-    p_tiny_sign=[];
     p_tiny_sum=num2cell(zeros(n_levels,1));
     sym_idx=[];
     if nnz(tiny_probs)

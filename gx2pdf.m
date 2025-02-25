@@ -22,8 +22,9 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % f=gx2pdf(25,[1 -5 2],[1 2 3],[2 3 7],0,5)
 %
 % Required inputs:
-% x         array of points at which to evaluate the PDF.
-%           'full' to use IFFT method to return f over an array of x that spans the distribution.
+% x         array of points at which to evaluate the cdf.
+%           set x to 'full' to use IFFT method to return f over an array of
+%           x that spans the distribution.
 %           if method is 'ellipse' and 'x_scale' is 'log', these are log10
 %           values of points measured from the finite tail, i.e.
 %           log10(abs(x-m)), and will return log10 of f.
@@ -36,8 +37,8 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % m         offset
 %
 % Optional positional input:
-% 'upper'   only if 'method' is 'das'. 'lower'/'upper' returns the lower/upper
-%           tail approx. of the pdf.
+% 'upper'   only if 'method' is 'tail', this option returns the upper infinite tail
+%           approximation of the pdf, otherwise the lower infinite tail approximation.
 %
 % Optional name-value inputs:
 % method    'auto' (default) tries to pick the best method for the parameters.
@@ -45,7 +46,7 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 %           'ray' for ray-trace method.
 %           'ifft' for IFFT method.
 %           'ruben' for Ruben's method. All w must be same sign and s=0.
-%           'das' for Das's infinite-tail approximation.
+%           'tail' for Das's infinite-tail approximation.
 %           'pearson' for Imhof's extension to Pearson's 3-moment
 %           approximation, extended again to include m and s.
 %           'ellipse' for ellipse approximation. All w must be same sign and s=0.
@@ -54,7 +55,9 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 %           be passed to gx2cdf.
 % dx        step-size for numerically differentiating the cdf. Default
 %           = sd of the distribution divided by 1e4.
-% vpa       true to use variable precision in Imhof and ray methods. Default=false.
+% precision (for Imhof method) 'basic' (default) uses double precision, 'vpa' uses variable precision.
+%           (for ray method) 'basic' uses double precision, 'log' (default)
+%           returns the log10 of outputs smaller than realmin, 'vpa' uses variable precision.
 % AbsTol    absolute error tolerance for the output. Default=1e-10.
 % RelTol    relative error tolerance for the output. Default=1e-6.
 %           AbsTol and RelTol are used only for Imhof's method, and ray method with grid integration.
@@ -78,8 +81,10 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 %
 % Outputs:
 % f         computed pdf.
-%           (if ray method with vpa) can be symbolic for small values
+%           (if ray method with 'precision' set to 'log') log10 of values < realmin
+%           (if ray method with 'precision' set to 'vpa') symbolic output for values < realmin
 %           (if ellipse method with 'log' x_scale) log10 of f
+%           (if tail method) cdf for lower tail, ccdf for upper tail. log10 of f for values < realmin.
 % f_err     (if ray method with Monte-Carlo integration) standard error of the output f
 %           (if Ruben's method) upper error bound of the output f
 %           (if Imhof's method) logical array, true for outputs too close to 0 or 1 to compute exactly with
@@ -134,8 +139,8 @@ if ~diff_flag
         else
             f=gx2_ruben(x,w,k,lambda,m,varargin{:},'output','pdf');
         end
-    elseif strcmpi(method,'das')
-        f=gx2_das(x,w,k,lambda,s,m,varargin{:},'output','pdf');
+    elseif strcmpi(method,'tail')
+        f=gx2_tail(x,w,k,lambda,s,m,varargin{:},'output','pdf');
         f_err=[];
     elseif strcmpi(method,'pearson')
         f=gx2_pearson(x,w,k,lambda,s,m,varargin{:},'output','pdf');

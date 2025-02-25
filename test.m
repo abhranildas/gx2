@@ -113,63 +113,75 @@ lambda=[10 20 5 0];
 s=20;
 m=0;
 
-x=linspace(0,4e3,20);
+x=linspace(0,2e3,100);
 
 % upper tail
 
 % pdf
-f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7,'vpa',false);
-f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof','vpa',false,'abstol',1e-100,'reltol',1e-100);
+log10_f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e3);
+log10_f_ray(log10_f_ray>0)=log10(log10_f_ray(log10_f_ray>0));
+f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof','abstol',1e-100,'reltol',1e-100);
 f_pearson=gx2pdf(x,w,k,lambda,s,m,'method','pearson');
-f_tail=gx2pdf(x,w,k,lambda,s,m,'upper','method','das');
+log10_f_tail=gx2pdf(x,w,k,lambda,s,m,'upper','method','tail');
+log10_f_tail(log10_f_tail>0)=log10(log10_f_tail(log10_f_tail>0));
 
 figure; hold on
 plot(x,log10(f_imhof),'-ok')
-plot(x,log10(f_ray),'-ob')
+plot(x,log10_f_ray,'-ob')
 plot(x,log10(f_pearson),'-og')
-plot(x,log10(f_tail),'-or')
+plot(x,log10_f_tail,'-or')
+yline(log10(realmin))
 
 % cdf
-p_ray=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray','n_rays',1e7,'vpa',false);
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'upper','method','imhof','vpa',false,'abstol',1e-100,'reltol',1e-100);
+log10_p_ray=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray','n_rays',1e7);
+log10_p_ray(log10_p_ray>0)=log10(log10_p_ray(log10_p_ray>0));
+p_imhof=gx2cdf(x,w,k,lambda,s,m,'upper','method','imhof','abstol',1e-100,'reltol',1e-100);
 p_pearson=gx2cdf(x,w,k,lambda,s,m,'upper','method','pearson');
-p_tail=gx2cdf(x,w,k,lambda,s,m,'upper','method','das');
+log10_p_tail=gx2cdf(x,w,k,lambda,s,m,'upper','method','tail');
+log10_p_tail(log10_p_tail>0)=log10(log10_p_tail(log10_p_tail>0));
 
 figure; hold on
-plot(x,log10(p_imhof),'-ok')
-plot(x,log10(p_ray),'-ob')
-plot(x,log10(p_pearson),'-og')
-plot(x,log10(p_tail),'-or')
+plot(x,log10(p_imhof),'ok')
+plot(x,log10_p_ray,'-b')
+plot(x,log10(p_pearson),'-g')
+plot(x,log10_p_tail,'or')
+yline(log10(realmin))
 
 % lower tail
 
-x=-linspace(0,4e3,20);
+x=-linspace(0,8e3,20);
 
 % pdf
-f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7,'vpa',false);
-f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof','vpa',false,'abstol',1e-200,'reltol',1e-200);
+log10_f_ray=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7);
+log10_f_ray(log10_f_ray>0)=log10(log10_f_ray(log10_f_ray>0));
+f_imhof=gx2pdf(x,w,k,lambda,s,m,'method','imhof','abstol',1e-200,'reltol',1e-200);
 f_pearson=gx2pdf(x,w,k,lambda,s,m,'method','pearson');
-f_tail=gx2pdf(x,w,k,lambda,s,m,'method','das');
+log10_f_tail=gx2pdf(x,w,k,lambda,s,m,'lower','method','tail');
+log10_f_tail(log10_f_tail>0)=log10(log10_f_tail(log10_f_tail>0));
 
 figure; hold on
 plot(x,log10(f_imhof),'-ok')
-plot(x,log10(f_ray),'-b')
+plot(x,log10_f_ray,'-ob')
 plot(x,log10(f_pearson),'-g')
-plot(x,log10(f_tail),'-r')
+plot(x,log10_f_tail,'-or')
+yline(log10(realmin))
 
 % cdf
-p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7,'vpa',false);
-p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof','vpa',false,'abstol',1e-200,'reltol',1e-200);
+log10_p_ray=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e7);
+log10_p_ray(log10_p_ray>0)=log10(log10_p_ray(log10_p_ray>0));
+p_imhof=gx2cdf(x,w,k,lambda,s,m,'method','imhof','abstol',1e-200,'reltol',1e-200);
 p_pearson=gx2cdf(x,w,k,lambda,s,m,'method','pearson');
-p_tail=gx2cdf(x,w,k,lambda,s,m,'method','das');
+log10_p_tail=gx2cdf(x,w,k,lambda,s,m,'lower','method','tail');
+log10_p_tail(log10_p_tail>0)=log10(log10_p_tail(log10_p_tail>0));
 
 figure; hold on
-plot(x,log10(p_imhof),'-ok')
-plot(x,log10(p_ray),'-b')
+plot(x,log10(p_imhof),'ok')
+plot(x,log10_p_ray,'-b')
 plot(x,log10(p_pearson),'-g')
-plot(x,log10(p_tail),'-r')
+plot(x,log10_p_tail,'-r')
+yline(log10(realmin))
 
-%% log sum exp approximation for ray vpa
+%% log sum exp approximation: infinite tail
 
 w=[-2 -3 4 1];
 k=[4 2 6 1];
@@ -180,15 +192,22 @@ m=0;
 x=linspace(0,1e4,20);
 
 % cdf
-[p_ray_log,p_err]=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray','n_rays',1e7);
+p_ray_log=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray','n_rays',1e3,'gpu_batch',0);
 
 
 figure; hold on
 plot(x(p_ray_log>0),log10(p_ray_log(p_ray_log>0)),'-ob','MarkerFaceColor','w')
 plot(x(p_ray_log<0),p_ray_log(p_ray_log<0),'-ob','MarkerFaceColor','b')
-% plot(x,double(log10(cell2sym(p_ray))),'-ob')
 
-%% log sum exp approximation for ray vpa
+% pdf
+f_ray_log=gx2pdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e3,'gpu_batch',0);
+
+
+figure; hold on
+plot(x(p_ray_log>0),log10(p_ray_log(p_ray_log>0)),'-ob','MarkerFaceColor','w')
+plot(x(p_ray_log<0),p_ray_log(p_ray_log<0),'-ob','MarkerFaceColor','b')
+
+%% log sum exp approximation: finite tail
 
 w=[2 3 4 1];
 k=[4 2 6 1];
@@ -200,7 +219,7 @@ x=logspace(-70,-40,20);
 
 % cdf
 tic
-p_ray_log=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e6);
+[p_ray_log,p_err]=gx2cdf(x,w,k,lambda,s,m,'method','ray','n_rays',1e2);
 toc
 % tic
 % p_ray_vpa=gx2cdf(x,w,k,lambda,s,m,'method','ray','precision','vpa','n_rays',10);
@@ -211,4 +230,3 @@ plot(x(p_ray_log>0),log10(p_ray_log(p_ray_log>0)),'-ob','MarkerFaceColor','w')
 plot(x(p_ray_log<0),p_ray_log(p_ray_log<0),'-ob','MarkerFaceColor','b')
 set(gca,'xscale','log')
 % plot(x,double(log10(cell2sym(p_ray_vpa))),'-or')
-

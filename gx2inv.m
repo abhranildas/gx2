@@ -22,7 +22,8 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     %
     % Required inputs:
     % p         probabilities at which to evaluate the inverse cdf.
-    %           Negative values indicate log probability.
+    %           Negative values indicate log probability, that can be used
+    %           to invert probabilities < realmin, using ray, ellipse, or tail cdf methods.
     % w         row vector of weights of the non-central chi-squares
     % k         row vector of degrees of freedom of the non-central chi-squares
     % lambda    row vector of non-centrality paramaters (sum of squares of
@@ -36,8 +37,8 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
     %
     % Optional name-value inputs:
     % This function numerically finds roots of the gx2cdf function, so most
-    % options for the gx2cdf function can be used here, eg 'method', which
-    % will be passed on to gx2cdf
+    % options for the gx2cdf function can be used here, eg 'method' and
+    % 'x_scale', which will be passed on to gx2cdf
     %
     % Output:
     % x         computed quantile
@@ -59,7 +60,7 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
 
     side=parser.Results.side;
 
-    if ~s && length(unique(w))==1
+    if ~s && length(unique(w))==1 && p>0
         % native ncx2 fallback
         if strcmpi(side,'upper')
             p=1-p;

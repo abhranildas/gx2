@@ -44,10 +44,19 @@ function [w,k,lambda,s,m]=norm_quad_to_gx2_params(mu,v,quad)
     % <a href="matlab:open(strcat(fileparts(which('gx2cdf')),filesep,'doc',filesep,'GettingStarted.mlx'))">Getting Started guide</a>
 	
 	% standardize the space
-	q2s=0.5*(quad.q2+quad.q2'); % symmetrize q2
-	q2=sqrtm(v)*q2s*sqrtm(v);
-	q1=sqrtm(v)*(2*q2s*mu+quad.q1);
-	q0=mu'*q2s*mu+quad.q1'*mu+quad.q0;
+	q2_sym=0.5*(quad.q2+quad.q2'); % symmetrize q2
+
+    % compute sqrtm of v while avoiding small negative eigenvalues
+    [R, D] = eig(v);
+    d = diag(D);
+    d(d < 0) = 0;              % Threshold any small negatives to zero
+    sqrt_d = sqrt(d);          % Compute the square roots
+    sqrt_v = R * diag(sqrt_d) * R';  % Reassemble the square root matrix
+
+	q2=sqrt_v*q2_sym*sqrt_v;
+    q2=(q2+q2')/2; % symmetrize q2 again
+	q1=sqrt_v*(2*q2_sym*mu+quad.q1);
+	q0=mu'*q2_sym*mu+quad.q1'*mu+quad.q0;
 	
 	[R,D]=eig(q2);
 	d=diag(D)';

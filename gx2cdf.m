@@ -24,7 +24,8 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 %
 % Required inputs:
 % x         array of points at which to evaluate the cdf.
-%           'full' to use IFFT method to return p over an array of x that spans the distribution.
+%           set x to 'full' to use IFFT method to return p over an array of
+%           x that spans the distribution.
 %           if method is 'ellipse' and 'x_scale' is 'log', these are log10
 %           values of points measured from the finite tail, i.e.
 %           log10(abs(x-m)), and will return log10 of p.
@@ -38,9 +39,8 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 %
 % Optional positional input:
 % 'upper'   more accurate estimate of the complementary cdf when it's small.
-%           if 'method' is 'das', 'lower'/'upper' returns the lower
-%           tail approx. of the cdf, and upper tail approx. of the complementary
-%           cdf resp.
+%           if 'method' is 'tail', this option returns the upper infinite tail
+%           approximation of the ccdf, otherwise the lower infinite tail approximation of the cdf.
 %
 % Optional name-value inputs:
 % method    'auto' (default) tries to pick the best method for the parameters.
@@ -48,11 +48,13 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 %           'ray' for ray-trace method.
 %           'ifft' for IFFT method.
 %           'ruben' for Ruben's method. All w must be same sign and s=0.
-%           'das' for Das's infinite-tail approximation.
+%           'tail' for Das's infinite-tail approximation.
 %           'pearson' for Imhof's extension to Pearson's 3-moment
 %           approximation, extended again to include m and s.
 %           'ellipse' for ellipse approximation. All w must be same sign and s=0.
-% vpa       true to use variable precision in Imhof and ray methods. Default=false.
+% precision (for Imhof method) 'basic' (default) uses double precision, 'vpa' uses variable precision.
+%           (for ray method) 'basic' uses double precision, 'log' (default)
+%           returns the log10 of outputs smaller than realmin, 'vpa' uses variable precision.
 % AbsTol    absolute error tolerance for the output. Default=1e-10.
 % RelTol    relative error tolerance for the output. Default=1e-6.
 %           AbsTol and RelTol are used only for Imhof's method, and ray method with grid integration.
@@ -75,8 +77,11 @@ function [p,p_err,x_grid]=gx2cdf(x,w,k,lambda,s,m,varargin)
 % x_scale   'linear' (default). 'log' if input x is log10 values of x, to compute on small x values.
 %
 % Outputs:
-% p         computed cdf or complementary cdf.
-%           (if ray method with vpa) can be symbolic for small values
+% p         computed cdf or ccdf.
+%           (if ray method with 'precision' set to 'log') log10 of values < realmin
+%           (if ray method with 'precision' set to 'vpa') symbolic output for values < realmin
+%           (if tail method) cdf for lower tail, ccdf for upper tail. log10 of p for values < realmin.
+%           
 %           (if ellipse method with 'log' x_scale) log10 of p
 % p_err     (if ray method with Monte-Carlo integration) standard error of the output p
 %           (if Ruben's method) upper error bound of the output p
@@ -148,8 +153,8 @@ elseif strcmpi(method,'ruben')
     else
         [p,p_err]=gx2_ruben(x,w,k,lambda,m,varargin{:});
     end
-elseif strcmpi(method,'das')
-    p=gx2_das(x,w,k,lambda,s,m,varargin{:});
+elseif strcmpi(method,'tail')
+    p=gx2_tail(x,w,k,lambda,s,m,varargin{:});
     p_err=[];
 elseif strcmpi(method,'pearson')
     p=gx2_pearson(x,w,k,lambda,s,m,varargin{:});

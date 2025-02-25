@@ -12,5 +12,6 @@ else
     m=max(logs,[],dim);
     % m=logs(1); % largest log
     s=m+log10(sum(10.^(logs-m),dim));
+    s(m==-inf)=-inf;
 end
 end

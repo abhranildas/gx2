@@ -43,7 +43,7 @@ if force_mc||dim>4
     % Monte-Carlo integration
 
     if strcmpi(dom_type,'quad') && ~strcmpi(precision,'vpa') && isgpu && gpu_batch % batch-process on GPU
-        disp('Using GPU. If this is slower, set gpu_batch to 0.');
+        disp('Using GPU. To use only CPU, set gpu_batch to 0.');
         gpudev=gpuDevice;
         reset(gpudev)
 
@@ -55,7 +55,6 @@ if force_mc||dim>4
         p_batches=nan(numel(fun_level),n_batches);
         p2_batches=nan(numel(fun_level),n_batches); % p squared (for SEM calculation)
         p_tiny_sum_batches=nan(numel(fun_level),n_batches); % for log precision
-        tic
         for i=1:n_batches
             n_z=mvnrnd(zeros(dim,1),eye(dim),n_rays_batches(i))';
             try
@@ -72,7 +71,6 @@ if force_mc||dim>4
                 rethrow(errmsg)
             end
         end
-        toc
         % mean across all batches
         p_sum=sum(p_batches,2);
         p=p_sum/n_rays;
@@ -82,8 +80,7 @@ if force_mc||dim>4
         p_err=sqrt((p2-p.^2)/n_rays);
 
         if strcmpi(precision,'log')
-            p_tiny_sum=log_sum_exp(p_tiny_sum_batches,2);
-            % TODO correctly interpret sign
+            p_tiny_sum=signed_log_sum_exp(p_tiny_sum_batches,2);
         end
 
     else % process all on CPU
@@ -136,11 +133,20 @@ if force_mc||dim>4
         p_tiny_sign=-sign(p_tiny_sum);
         p_sum=p_sum+p_tiny_sign.*(10.^(-abs(p_tiny_sum)));
         p=p_sum/n_rays;
+        % p_err=p_tiny_sum;
         if any(p_tiny_sign(~p)==-1)
             error('p_tiny has wrong sign')
         end
-        p(~p)=p_tiny_sum(~p)-log10(n_rays);
-        warning('Some output values are smaller than realmin=1e-308. Returning their logs, which are negative.')
+
+        % tiny_idx=(~p)&(p_tiny_sum>-inf); % places where p=0, but p_tiny has some value
+        % p(tiny_idx)=p_tiny_sum(tiny_idx)-log10(n_rays);
+        p_tiny_sum=p_tiny_sum-log10(n_rays); % divide by the number of rays
+        p_tiny_sum(p_tiny_sum==-inf)=0; % set exactly 0 to 0
+        p(~p)=p_tiny_sum(~p);
+
+        if any(p<0)
+            warning('Some output values are small for double precision. Returning their log10 values, which are negative.')
+        end
     end
 
     % divide probs by 2

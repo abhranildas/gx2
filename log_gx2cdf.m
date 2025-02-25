@@ -9,5 +9,4 @@ if isnumeric(p)
 elseif iscell(p)
     l=double(log10(cell2sym(p)));
 end
-% end
 end

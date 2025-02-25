@@ -10,21 +10,20 @@ addRequired(parser,'s',@(x) isreal(x) && isscalar(x));
 addRequired(parser,'m',@(x) isreal(x) && isscalar(x));
 addOptional(parser,'side','lower',@(x) strcmpi(x,'lower') || strcmpi(x,'upper') );
 addParameter(parser,'output','cdf',@(x) strcmpi(x,'cdf') || strcmpi(x,'pdf') );
-addParameter(parser,'vpa',false,@islogical);
+addParameter(parser,'precision','basic',@(x) strcmpi(x,'basic')||strcmpi(x,'vpa'));
 addParameter(parser,'AbsTol',1e-10,@(x) isreal(x) && isscalar(x) && (x>=0));
 addParameter(parser,'RelTol',1e-2,@(x) isreal(x) && isscalar(x) && (x>=0));
 
 parse(parser,x,w,k,lambda,s,m,varargin{:});
 output=parser.Results.output;
 side=parser.Results.side;
-vpaflag=parser.Results.vpa;
 AbsTol=parser.Results.AbsTol;
 RelTol=parser.Results.RelTol;
 
 % compute the integral
-if ~vpaflag
+if strcmpi(parser.Results.precision,'basic')
     imhof_integral=arrayfun(@(x) integral(@(u) gx2_imhof_integrand(u,x,w',k',lambda',s,m,output),0,inf,'AbsTol',AbsTol,'RelTol',RelTol),x);
-else
+elseif strcmpi(parser.Results.precision,'vpa')
     syms u
     imhof_integral=arrayfun(@(x) vpaintegral(@(u) gx2_imhof_integrand(u,x,w',k',lambda',s,m,output),...
         u,0,inf,'AbsTol',AbsTol,'RelTol',RelTol),x);
