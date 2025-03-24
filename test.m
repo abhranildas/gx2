@@ -93,16 +93,32 @@ plot(x,f_ray,'-b')
 
 %% gx2inv with log prob
 
-w=[-2 1 3];
-k=[1 1 7];
-lambda=[7 5 0];
-m=0;
-s=10;
+% non-elliptic gx2
 
-p=-400;
+w=[1 -10 2];
+k=[1 2 3];
+lambda=[2 3 7];
+s=5;
+m=10;
 
-x=gx2inv([p p],w,k,lambda,s,m,'method','ray','vpa',true,'mc_samples',5e4);
+x=gx2inv(-1e3,w,k,lambda,s,m,'method','ray')
+p=gx2cdf(x,w,k,lambda,s,m,'method','ray')
 
+x=gx2inv(-1e3,w,k,lambda,s,m,'upper','method','ray')
+p=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray')
+
+% elliptic gx2
+w=[4 5 1];
+k=[1 2 3];
+lambda=[5 6 0];
+s=0;
+m=10;
+
+x=gx2inv(-1e3,w,k,lambda,s,m,'method','ellipse')
+p=gx2cdf(x,w,k,lambda,s,m,'method','ellipse')
+
+x=gx2inv(-1e3,w,k,lambda,s,m,'upper','method','tail')
+p=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray')
 
 
 %% test tail pdf and cdf approximation

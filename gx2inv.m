@@ -60,7 +60,7 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
 
     side=parser.Results.side;
 
-    if ~s && length(unique(w))==1 && p>0
+    if ~s && length(unique(w))==1 && all(p>0)
         % native ncx2 fallback
         if strcmpi(side,'upper')
             p=1-p;
@@ -77,9 +77,6 @@ function x=gx2inv(p,w,k,lambda,s,m,varargin)
         if p>0
             x=arrayfun(@(p) fzero(@(x) gx2cdf(x,w,k,lambda,s,m,varargin{:})-p,mu),p);
         else % log probability, inverted using sym
-            % options = optimset('PlotFcns',{@optimplotx,@optimplotfval});
-            % x=arrayfun(@(p) fzero(@(x) double(log10(gx2cdf(x,w,k,lambda,s,m,varargin{:})))-p,mu),p);
-            % options = optimset('FunValCheck','off')
             x=arrayfun(@(p) fzero(@(x) log_gx2cdf(x,w,k,lambda,s,m,varargin{:})-p,mu),p);
         end
     end

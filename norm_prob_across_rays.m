@@ -35,6 +35,8 @@ if ~strcmpi(dom_type,'quad') || parser.Results.bd_pts
 
     % initial signs and boundary distances in standardized space
     [init_sign,z]=dom_standard_raytrace(n_z);
+
+    p_tiny_sum=0;
 end
 
 if strcmpi(dom_type,'quad')
@@ -51,7 +53,7 @@ if strcmpi(dom_type,'quad')
 else
     if strcmpi(output,'prob')
         % probability on rays
-        if ~vpaflag
+        if ~strcmpi(precision,'vpa')
             p_rays=cellfun(@(init_sign_ray,z_ray) prob_ray(init_sign_ray,z_ray,dim,varargin{:}),num2cell(init_sign),z);
             % if there are roots on rays with 0 prob,
             % notify to turn on vpa
