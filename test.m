@@ -112,10 +112,10 @@ w=[4 5 1];
 k=[1 2 3];
 lambda=[5 6 0];
 s=0;
-m=10;
+m=-50;
 
-x=gx2inv(-1e3,w,k,lambda,s,m,'method','ellipse')
-p=gx2cdf(x,w,k,lambda,s,m,'method','ellipse')
+x=gx2inv(-1e3,w,k,lambda,s,m,'method','ellipse','x_scale','log')
+p=gx2cdf(x,w,k,lambda,s,m,'method','ellipse','x_scale','log')
 
 x=gx2inv(-1e3,w,k,lambda,s,m,'upper','method','tail')
 p=gx2cdf(x,w,k,lambda,s,m,'upper','method','ray')

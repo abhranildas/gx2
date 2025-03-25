@@ -77,7 +77,9 @@ function [f,f_err,xgrid]=gx2pdf(x,w,k,lambda,s,m,varargin)
 % n_grid    number of grid points used for IFFT. Larger=more accurate. Default=1e6.
 %
 % Options for ellipse method:
-% x_scale   'linear' (default). 'log' if input x is log10 values of x, to compute on small x values.
+% x_scale   'linear' (default). 'log' if input x is log10 values of x,
+%           measured from the finite tail m of an elliptic distribution.
+%           This will return log10 values of the probability.
 %
 % Outputs:
 % f         computed pdf.

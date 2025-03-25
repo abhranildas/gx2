@@ -46,10 +46,9 @@ a=exp(-norm(ellipse_center)^2/2)/(2^(dim/2)*gamma(dim/2+1)*sqrt(prod(ellipse_wei
 % ellipse_vol=x_flat.^(dim/2)*pi^(dim/2)/(gamma(dim/2+1)*sqrt(prod(ellipse_weights)));
 
 if strcmpi(x_scale,'linear')
+    x_eff=max(x_flat-m,0); % effective x value from the tail
     if strcmpi(parser.Results.output,'cdf')
-        % p=mvnpdf(ellipse_center)*ellipse_vol;
-        p=a.*(x_flat-m).^(dim/2);
-
+        p=a.*x_eff.^(dim/2);
         % flip if necessary
         if (w_pos && strcmpi(side,'upper')) || (~w_pos && strcmpi(side,'lower'))
             p=1-p;
@@ -58,8 +57,8 @@ if strcmpi(x_scale,'linear')
         p=(a*dim/2)*(x_flat-m).^(dim/2-1);
     end
 
-    % compute log p for log x
 else
+    % compute log p for log x
     log10_x=x_flat;
     % factor corr. to the density of the chosen point:
     % if norm(ellipse_center) % if non-central
@@ -80,24 +79,19 @@ end
 
 if norm(ellipse_center) % if non-central
     if strcmpi(x_scale,'linear')
-        r=sqrt(x_flat-m)/sqrt(sum(ellipse_center.^2.*ellipse_weights));
+        r=sqrt(x_eff)/sqrt(sum(ellipse_center.^2.*ellipse_weights));
         p_rel_err=norm(ellipse_center)^2*r;
         % compute log (rel err) for log x
     else
         p_rel_err=2*log10(norm(ellipse_center))+log10_x/2-log10(sum(ellipse_center.^2.*ellipse_weights))/2;
     end
 else % if central
-    p_rel_err=(x_flat-m)/2*min(ellipse_weights);
+    p_rel_err=x_eff/2*min(ellipse_weights);
     % compute log (rel err) for log x
     if strcmpi(x_scale,'log')
         p_rel_err=log10_x-log10(2*min(ellipse_weights));
     end
 end
-
-% p_rel_err(x_flat<0)=log10_p_rel_err;
-
-% p_rel_err_neg=1-exp((norm(ellipse_center)^2-vecnorm(rect_far,2,2).^2)/2);
-% p_rel_err_pos=exp((norm(ellipse_center)^2-vecnorm(rect_near,2,2).^2)/2)-1;
 
 % reshape outputs to input shape
 p=reshape(p,size(x));
