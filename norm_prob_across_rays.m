@@ -59,7 +59,7 @@ else
             % notify to turn on vpa
             n_roots=cellfun(@(z) numel(z)>0,z);
             if nnz(n_roots&(~p_rays))
-                warning("Some rays contain probabilities too small for double precision, returning 0. Set 'vpa' to true to compute these with variable precision.")
+                warning("Some rays contain probabilities too small for double precision, returning 0. Set 'precision' to 'vpa' to compute these with variable precision.")
             end
         else
             p_rays=cellfun(@(init_sign_ray,z_ray) prob_ray(init_sign_ray,z_ray,dim,varargin{:}),num2cell(init_sign),z,'un',0);
