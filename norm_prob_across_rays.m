@@ -36,7 +36,7 @@ if ~strcmpi(dom_type,'quad') || parser.Results.bd_pts
     % initial signs and boundary distances in standardized space
     [init_sign,z]=dom_standard_raytrace(n_z);
 
-    p_tiny_sum=0;
+    p_tiny_sum=-inf;
 end
 
 if strcmpi(dom_type,'quad')

@@ -145,7 +145,7 @@ if force_mc||dim>4
         p(~p)=p_tiny_sum(~p);
 
         if any(p<0)
-            warning('Some output values are small for double precision. Returning their log10 values, which are negative.')
+            warning('Some output values are too small for double precision. Returning their log10 values, which are negative.')
         end
     end
 
