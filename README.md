@@ -8,7 +8,7 @@ Bugs/comments/questions/suggestions to abhranil.das@utexas.edu.
 
 If you use this code, please cite:
  - [Methods to integrate multinormals and compute classification measures](https://arxiv.org/abs/2012.14331)
- - [New methods to compute the generalized chi-square distribution.](https://arxiv.org/abs/2404.05062v1)
+ - New methods to compute the generalized chi-square distribution: [journal](https://www.tandfonline.com/doi/abs/10.1080/00949655.2025.2501401) / [arxiv](https://arxiv.org/abs/2404.05062) (better formatting)
 
 ## Installation
 Within Matlab's Home tab, select Add-Ons > Get Add-Ons > Search for 'Generalized chi-square distribution' and install.
